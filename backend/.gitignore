@@ -1,0 +1,11 @@
+# Dependencias (Los 9000 archivos)
+node_modules/
+
+# Archivo de Entorno (¡El más importante!)
+# Contiene tus contraseñas de la base de datos
+.env
+
+# Archivos de logs y del sistema operativo
+npm-debug.log
+.DS_Store
+```eof

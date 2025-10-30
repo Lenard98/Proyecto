@@ -1,0 +1,98 @@
+/* Paleta de colores:
+   Café Oscuro (para botones/texto): #5D4037
+   Café Medio (para bordes/hover): #795548
+   Café Claro (Fondo de página): #EFEBE9
+   Blanco (Tarjeta): #FFFFFF
+   Error: #D32F2F
+*/
+
+/* 1. Fondo de toda la página */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #EFEBE9; /* Un fondo café muy claro/beige */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* 2. La tarjeta/contenedor blanco del login */
+.login-container {
+  background-color: #FFFFFF;
+  padding: 2.5rem 3rem;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* 3. Estilo para tu logo */
+.login-logo {
+  width: 150px; /* Ajusta el tamaño como prefieras */
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+/* 4. Título */
+.login-container h2 {
+  color: #5D4037; /* Texto en café oscuro */
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* 5. El formulario */
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 6. Los campos de texto (input) */
+.login-input {
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #D7CCC8; /* Borde café claro */
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #5D4037;
+}
+
+.login-input::placeholder {
+  color: #A1887F; /* Placeholder en café más sutil */
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: #795548; /* Borde café medio al seleccionar */
+  box-shadow: 0 0 0 2px rgba(121, 85, 72, 0.2);
+}
+
+/* 7. El botón de Ingresar */
+.login-button {
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #5D4037; /* Botón en café oscuro */
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #795548; /* Café medio al pasar el mouse */
+}
+
+.login-button:disabled {
+  background-color: #A1887F;
+  cursor: not-allowed;
+}
+
+/* 8. El mensaje de error */
+.login-error {
+  color: #D32F2F; /* Rojo para errores */
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
