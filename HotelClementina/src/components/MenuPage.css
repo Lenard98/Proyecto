@@ -1,0 +1,123 @@
+/* components/MenuPage.css - Estilos del Layout y Sidebar */
+
+/* Estilos de Layout General */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  font-family: 'Roboto', sans-serif;
+}
+
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-header {
+  background-color: #ffffff;
+  padding: 15px 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.content-area {
+  flex-grow: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+/* Estilos de Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #2c3e50; 
+  color: #ecf0f1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border: 2px solid #3498db;
+}
+
+.sidebar-title {
+  font-size: 1.4rem;
+  margin: 0;
+  color: #ffffff;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+  font-size: 1rem;
+}
+
+.sidebar-nav li:hover {
+  background-color: #34495e;
+}
+
+.sidebar-nav li.active {
+  background-color: #007bff; 
+  color: #ffffff;
+  border-left: 5px solid #28a745;
+  padding-left: 15px;
+}
+
+.sidebar-icon {
+  margin-right: 10px;
+  font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        padding: 10px 0;
+        max-height: 60px; 
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .sidebar-header, .sidebar-nav {
+        display: none; 
+    }
+    .main-content {
+        padding-top: 0;
+    }
+}
