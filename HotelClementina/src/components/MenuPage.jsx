@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-// IMPORTANTE: Ruta de importación corregida a tu estructura (en la misma carpeta 'components')
 import EmployeesForm from './Employees/Employees'; 
-import './MenuPage.css'; // Importa los estilos del layout
+import './MenuPage.css'; 
 
 // Lista de los ítems del sidebar
 const sidebarItems = [
