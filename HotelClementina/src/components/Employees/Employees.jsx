@@ -1,38 +1,26 @@
 import React, { useState } from 'react';
-import './Employees.css'; // Importa los estilos del formulario
+import './Employees.css'; 
 
 function EmployeesForm() {
+  // Estado inicial del formulario (incluyendo campos para la BD y la UI)
   const [formData, setFormData] = useState({
     Nom_Emp: '',
     Ape_Emp: '',
     Fch_Nacim: '',
     Sex_Emp: 1, 
     Tel_Emp: '',
-    Fec_Ini_Emp: new Date().toISOString().substring(0, 10), 
+    Fec_Ini_Emp: new Date().toISOString().substring(0, 10), // Fecha actual
     Cor_Emp: '',
     Dir_Emp: '',
     Cod_Cargo: 1, 
     Sueldo_Emp: '',
     Seguro: '',
-    HabDesEmp: 1,
-    Tipo_Documento: 'DNI',
-    Rol_Sistema: 'Administrador', 
+    HabDesEmp: 1, // 1: Activo/Habilitado
+    Tipo_Documento: 'DNI', // Campo UI
+    Rol_Sistema: 'Administrador', // Campo UI
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? (checked ? 1 : 0) : value,
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Datos a guardar:', formData);
-    alert('Datos del empleado guardados. (Revisar consola)');
-  };
-
+  // Valores de simulación para selectores
   const cargos = [
     { id: 1, nombre: 'Recepcionista' },
     { id: 2, nombre: 'Limpieza' },
@@ -41,10 +29,70 @@ function EmployeesForm() {
   const tiposDocumento = ['DNI', 'Pasaporte', 'Carnet de Residencia'];
   const roles = ['Administrador', 'Cajero', 'Empleado General'];
 
+  // Manejador genérico de cambios en los inputs
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? (checked ? 1 : 0) : value,
+    });
+  };
+
+  // Función PRINCIPAL para enviar los datos al Backend
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // 1. Crear el objeto de datos que SÓLO incluye las columnas de la tabla 'empleados'
+    const dataToSend = {
+        Nom_Emp: formData.Nom_Emp,
+        Ape_Emp: formData.Ape_Emp,
+        Fch_Nacim: formData.Fch_Nacim,
+        Sex_Emp: parseInt(formData.Sex_Emp), 
+        Tel_Emp: formData.Tel_Emp,
+        Fec_Ini_Emp: formData.Fec_Ini_Emp,
+        Cor_Emp: formData.Cor_Emp,
+        Dir_Emp: formData.Dir_Emp,
+        Cod_Cargo: parseInt(formData.Cod_Cargo), 
+        Sueldo_Emp: parseFloat(formData.Sueldo_Emp), 
+        Seguro: parseFloat(formData.Seguro || 0), // Usa 0 si el campo está vacío
+        HabDesEmp: parseInt(formData.HabDesEmp),
+    };
+
+    // 2. Definir la URL de tu API (usamos el puerto 3001 definido en server.js)
+    const apiUrl = 'http://localhost:3002/api/empleados'; 
+
+    try {
+        // 3. Llamada Fetch al endpoint POST
+        const response = await fetch(apiUrl, { 
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend), // Envía los datos como JSON
+        });
+
+        const responseData = await response.json();
+
+        // 4. Procesar la respuesta
+        if (response.ok && responseData.success) {
+            alert('✅ ¡Empleado guardado exitosamente!');
+            // Opcional: Aquí puedes añadir lógica para limpiar el formulario o redirigir
+        } else {
+            // Maneja errores de validación (código 400) o errores internos (código 500) del backend
+            alert(`❌ Error al guardar empleado: ${responseData.message || response.statusText}`);
+        }
+    } catch (error) {
+        // Maneja errores de conexión o red
+        console.error('Error de conexión:', error);
+        alert('❌ Error: No se pudo conectar con el servidor backend. Asegúrate de que esté corriendo en el puerto 3001.');
+    }
+};
+
   return (
     <div className="employee-form-container">
       <header className="form-header">
         <h2>Gestión de Empleados</h2>
+        {/* Este botón podría ser para iniciar un nuevo formulario vacío */}
         <button className="btn-primary">Agregar Nuevo Empleado</button>
       </header>
 
