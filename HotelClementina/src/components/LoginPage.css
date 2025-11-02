@@ -73,7 +73,7 @@
   padding: 0.8rem;
   font-size: 1rem;
   font-weight: bold;
-  background-color: #5D4037; /* Botón en café oscuro */
+  background-color: #5E637A; /* Botón en café oscuro */
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
@@ -82,7 +82,7 @@
 }
 
 .login-button:hover {
-  background-color: #795548; /* Café medio al pasar el mouse */
+  background-color: #768BA6; /* Café medio al pasar el mouse */
 }
 
 .login-button:disabled {
