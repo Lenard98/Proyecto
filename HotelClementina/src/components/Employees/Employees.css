@@ -24,7 +24,7 @@
 
 /* Estilos de botones */
 .btn-primary {
-    background-color: #007bff;
+    background-color: #5E637A;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -35,11 +35,11 @@
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
+    background-color: #768BA6;
 }
 
 .btn-secondary {
-    background-color: #6c757d;
+    background-color: red;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -51,7 +51,7 @@
 }
 
 .btn-secondary:hover {
-    background-color: #5a6268;
+    background-color: #9A0000;
 }
 
 /* Estructura del Formulario */
