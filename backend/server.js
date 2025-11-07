@@ -14,6 +14,7 @@ const port = process.env.PORT || 3002;
 app.use(cors()); // Permite peticiones de otros orígenes (tu frontend)
 app.use(express.json()); // Permite a Express entender JSON en el body
 
+
 // 4. Configurar la conexión a la BD
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -123,6 +124,53 @@ app.post('/api/empleados', async (req, res) => {
         });
     }
 });
+
+app.post('/api/huespedes', async (req, res) => {
+    // Datos enviados desde el frontend (Huespedes.jsx)
+    const { 
+        Nom_Hues, Ape_Hues, Fch_Nacim, Tel_Hues, Cor_Hues, Dir_Hues, 
+        Pais_Hues, HabDesHues, Tipo_Documento, Num_Documento 
+    } = req.body;
+
+    // Validación básica
+    if (!Nom_Hues || !Ape_Hues || !Num_Documento) {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre, Apellido y Número de Documento.' });
+    }
+
+    // 💡 GENERACIÓN DEL CÓDIGO ÚNICO (igual que Empleados)
+    const Cod_Hues = `HUES-${Date.now().toString().slice(-6)}`; 
+
+    const sql = `
+        INSERT INTO huespedes 
+        (Cod_Hues, Nom_Hues, Ape_Hues, Fch_Nacim, Tel_Hues, Cor_Hues, Dir_Hues, Pais_Hues, HabDesHues, Tipo_Documento, Num_Documento) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const values = [
+        Cod_Hues, Nom_Hues, Ape_Hues, Fch_Nacim, Tel_Hues, Cor_Hues, Dir_Hues, 
+        Pais_Hues, HabDesHues, Tipo_Documento, Num_Documento
+    ];
+
+    try {
+        const [result] = await pool.query(sql, values); 
+
+        res.status(201).json({ 
+            success: true,
+            message: 'Huésped registrado con éxito', 
+            Cod_Hues_Generado: Cod_Hues
+        });
+
+    } catch (error) {
+        console.error('Error al insertar huésped en la base de datos:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error interno del servidor al registrar huésped.', 
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
 
 
 // ------------------------------------------------------------------

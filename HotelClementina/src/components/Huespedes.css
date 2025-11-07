@@ -1,0 +1,233 @@
+/* components/Huespedes/Huespedes.css */
+/* Este es el MISMO CSS de Employees.css para que se vea idéntico */
+
+.employee-form-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.form-header h2 {
+    font-size: 1.8rem;
+    color: #343a40;
+    margin: 0;
+}
+
+/* Estilos de botones */
+.btn-primary {
+    background-color: #5E637A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #768BA6;
+}
+
+.btn-secondary {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    margin-right: 10px;
+}
+
+.btn-secondary:hover {
+    background-color: #9A0000;
+}
+
+/* Estructura del Formulario */
+.employee-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.form-section {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 0;
+    flex: 1 1 100%; /* CAMBIADO: Fuerza a la única sección a ocupar el 100% */
+    min-width: 300px;
+    background-color: white;
+}
+
+legend {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #343a40;
+    padding: 0 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.form-group input:not([type="checkbox"]),
+.form-group select,
+.form-group textarea {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.full-row {
+    grid-column: 1 / -1;
+}
+
+/* Estilos específicos para la sección de Acceso */
+.access-system {
+    flex-grow: 1;
+    flex-basis: 100%;
+}
+
+.access-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.read-only-input {
+    background-color: #e9ecef !important;
+    cursor: not-allowed;
+}
+
+/* Estilos para el interruptor (toggle) */
+.toggle-group {
+    grid-column: 3 / 4;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+}
+
+input:checked + .slider {
+    background-color: #28a745;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Botones al final del formulario */
+.form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .employee-form {
+        gap: 20px;
+    }
+    .form-section {
+        flex-basis: 100%;
+        min-width: unset;
+    }
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .access-grid {
+        grid-template-columns: 1fr;
+    }
+    .full-row {
+        grid-column: unset;
+    }
+    .toggle-group {
+        grid-column: unset;
+        justify-content: flex-start;
+    }
+}
+
