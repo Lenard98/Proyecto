@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import LoginPage from './components/LoginPage.jsx';
 import MenuPage from './components/MenuPage.jsx';
 
+
 // Borramos el CSS de App.css si no lo vamos a usar
 // import './App.css'; 
 
