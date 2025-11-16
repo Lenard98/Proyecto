@@ -7,6 +7,7 @@ import HuespedesForm from './Huespedes.jsx';
 import EmployeesForm from './Employees/Employees'; 
 import logoHotel from '../assets/LogoHotel.jpg';
 import './MenuPage.css'; 
+import EmpresaForm from './Empresa';
 
 
 // Lista de los ítems del sidebar
@@ -18,6 +19,7 @@ const sidebarItems = [
     { id: 'facturacion', name: 'Facturación', icon: '🧾' },
     { id: 'configuracion', name: 'Configuración', icon: '⚙️' },
     { id: 'perfil', name: 'Perfil', icon: '👤' },
+    { id: 'empresa', name: 'Empresa', icon: '🏢' },
 ];
 
 function MenuPage() {
@@ -37,6 +39,10 @@ function MenuPage() {
 
             case 'empleados':
                 return <EmployeesForm />; 
+                
+            case 'empresa':
+                return <EmpresaForm/>;   
+
                 
             case 'habitaciones':
                 return <div>Vista de Habitaciones</div>;

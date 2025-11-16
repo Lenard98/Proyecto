@@ -14,7 +14,6 @@ const port = process.env.PORT || 3002;
 app.use(cors()); // Permite peticiones de otros orígenes (tu frontend)
 app.use(express.json()); // Permite a Express entender JSON en el body
 
-
 // 4. Configurar la conexión a la BD
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -125,6 +124,78 @@ app.post('/api/empleados', async (req, res) => {
     }
 });
 
+// ------------------------------------------------------------------
+// 7. Endpoint para OBTENER los datos de la Empresa
+// ------------------------------------------------------------------
+app.get('/api/empresa', async (req, res) => {
+  // Siempre buscamos el ID 1, ya que solo hay una empresa
+  const sql = "SELECT * FROM Empresa WHERE id_empresa = 1"; 
+
+  try {
+    const [rows] = await pool.query(sql);
+    if (rows.length > 0) {
+      res.json({ success: true, data: rows[0] });
+    } else {
+      // Esto pasaría si la tabla está vacía (el script SQL lo previene)
+      res.status(404).json({ success: false, message: 'No se encontraron datos de la empresa.' });
+    }
+  } catch (error) {
+    console.error('Error al obtener datos de la empresa:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+  }
+});
+
+// ------------------------------------------------------------------
+// 7. Endpoint para Registrar Empresa (NUEVO - Actualizado)
+// ------------------------------------------------------------------
+app.post('/api/empresa', async (req, res) => {
+    // Leemos AMBOS campos del formulario
+    const { Cod_Emp, Nom_Emp } = req.body;
+
+    // Validación básica
+    if (!Cod_Emp || !Nom_Emp) {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Código (RTN) y Nombre.' });
+    }
+
+    // Sentencia SQL (Usa los datos del formulario)
+    const sql = `
+        INSERT INTO Empresa (Cod_Emp, Nom_Emp) 
+        VALUES (?, ?)
+    `;
+    
+    // Array de valores (Usa los datos del formulario)
+    const values = [Cod_Emp, Nom_Emp];
+
+    try {
+        const [result] = await pool.query(sql, values); 
+
+        // Respuesta exitosa
+        res.status(201).json({ 
+            success: true,
+            message: 'Empresa registrada con éxito', 
+            Cod_Emp_Ingresado: Cod_Emp 
+        });
+
+    } catch (error) {
+        console.error('Error al insertar empresa en la base de datos:', error);
+        
+        // Manejo de error de llave duplicada (si el RTN ya existe)
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ // 409 Conflict
+                success: false,
+                message: 'Error: El Código (RTN) de esa empresa ya existe en la base de datos.'
+            });
+        }
+        
+        // Otro error
+        res.status(500).json({ 
+            success: false,
+            message: 'Error interno del servidor al registrar empresa.', 
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
 app.post('/api/huespedes', async (req, res) => {
     // Datos enviados desde el frontend (Huespedes.jsx)
     const { 
@@ -170,11 +241,60 @@ app.post('/api/huespedes', async (req, res) => {
     }
 });
 
+// ------------------------------------------------------------------
+// 8. Endpoint para Registrar Empresa (NUEVO - Actualizado)
+// ------------------------------------------------------------------
+app.post('/api/empresa', async (req, res) => {
+    // Leemos AMBOS campos del formulario
+    const { Cod_Emp, Nom_Emp } = req.body;
 
+    // Validación básica
+    if (!Cod_Emp || !Nom_Emp) {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Código (RTN) y Nombre.' });
+    }
+
+    // Sentencia SQL (Usa los datos del formulario)
+    const sql = `
+        INSERT INTO Empresa (Cod_Emp, Nom_Emp) 
+        VALUES (?, ?)
+    `;
+    
+    // Array de valores (Usa los datos del formulario)
+    const values = [Cod_Emp, Nom_Emp];
+
+    try {
+        const [result] = await pool.query(sql, values); 
+
+        // Respuesta exitosa
+        res.status(201).json({ 
+            success: true,
+            message: 'Empresa registrada con éxito', 
+            Cod_Emp_Ingresado: Cod_Emp 
+        });
+
+    } catch (error) {
+        console.error('Error al insertar empresa en la base de datos:', error);
+        
+        // Manejo de error de llave duplicada (si el RTN ya existe)
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ // 409 Conflict
+                success: false,
+                message: 'Error: El Código (RTN) de esa empresa ya existe en la base de datos.'
+            });
+        }
+        
+        // Otro error
+        res.status(500).json({ 
+            success: false,
+            message: 'Error interno del servidor al registrar empresa.', 
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
 
 
 // ------------------------------------------------------------------
-// 7. Iniciar el servidor
+// 9. Iniciar el servidor
 // ------------------------------------------------------------------
 app.listen(port, () => {
   console.log(`🚀 Servidor backend corriendo en http://localhost:${port}`);
