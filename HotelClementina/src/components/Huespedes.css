@@ -229,5 +229,24 @@ input:checked + .slider:before {
         grid-column: unset;
         justify-content: flex-start;
     }
+    .message-success {
+    padding: 10px 0;
+    text-align: center;
+    font-weight: bold;
+    color: green;
+}
+
+.message-info {
+    padding: 10px 0;
+    text-align: center;
+    font-weight: bold;
+    color: #6c757d;
+}
+
+.form-grid-single {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
 }
 
