@@ -8,11 +8,14 @@ import EmployeesForm from './Employees/Employees';
 import logoHotel from '../assets/LogoHotel.jpg';
 import './MenuPage.css'; 
 import EmpresaForm from './Empresa';
+import Habitaciones from './Habitaciones';
+import Reservas from './Reservas';
+import Facturacion from './Facturacion';
 
 
 // Lista de los ítems del sidebar
 const sidebarItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: '🏠' },
+    { id: 'reservas', name: 'Reservas', icon: '🏠' },
     { id: 'huespedes', name: 'Huéspedes', icon: '👥' },
     { id: 'habitaciones', name: 'Habitaciones', icon: '🛏️' },
     { id: 'empleados', name: 'Empleados', icon: '🧑‍💼' },
@@ -30,8 +33,8 @@ function MenuPage() {
     // Renderiza el componente de la vista seleccionada
     const renderContentView = () => {
         switch (currentView) {
-            case 'dashboard':
-                return <div>Bienvenido al Dashboard.</div>;
+            case 'reservas':
+                return <Reservas />;
                 
             case 'huespedes': 
                 // 2. CASO 'HUESPEDES' AÑADIDO: Muestra el componente Huéspedes
@@ -45,10 +48,10 @@ function MenuPage() {
 
                 
             case 'habitaciones':
-                return <div>Vista de Habitaciones</div>;
+                return <Habitaciones/>;
 
             case 'facturacion':
-                return <div>Vista de Facturación</div>;
+                return <Facturacion/>;
                 
             case 'configuracion':
                 return <div>Vista de Configuración</div>;
