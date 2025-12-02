@@ -27,7 +27,7 @@ const pool = mysql.createPool({
 });
 
 // ------------------------------------------------------------------
-// 5. Endpoint de Login (CÓDIGO ORIGINAL)
+// 5. Endpoint de Login
 // ------------------------------------------------------------------
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
@@ -69,246 +69,378 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// 6. Endpoint para Registrar Empleados (CON CORRECCIÓN DE Cod_Emp)
+// 6. Endpoint para Registrar Empleados 
 // ------------------------------------------------------------------
 app.post('/api/empleados', async (req, res) => {
-    // Los datos del formulario de React
-    const { 
-        Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp, 
-        Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp, 
-        Seguro, HabDesEmp
-    } = req.body;
+    const { 
+        Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp, 
+        Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp, 
+        Seguro, HabDesEmp
+    } = req.body;
 
-    // Validación básica
-    if (!Nom_Emp || !Ape_Emp || !Cor_Emp || Sueldo_Emp === undefined || Cod_Cargo === undefined) {
-        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre, Apellido, Correo, Sueldo y Cargo.' });
-    }
+    if (!Nom_Emp || !Ape_Emp || !Cor_Emp || Sueldo_Emp === undefined || Cod_Cargo === undefined) {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre, Apellido, Correo, Sueldo y Cargo.' });
+    }
 
-    // Solución al error 'ER_NO_DEFAULT_FOR_FIELD': Generar un valor para Cod_Emp
-    // Usamos el timestamp para crear un código alfanumérico único.
-    const Cod_Emp = `EMP-${Date.now().toString().slice(-6)}`; 
+    const Cod_Emp = `EMP-${Date.now().toString().slice(-6)}`; 
 
-    // Sentencia SQL: AHORA INCLUYE Cod_Emp
-    const sql = `
-        INSERT INTO empleados 
-        (Cod_Emp, Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp, Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp, Seguro, HabDesEmp) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    
-    // Array de valores: AHORA INCLUYE Cod_Emp como primer valor
-    const values = [
-        Cod_Emp, Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp, 
-        Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp, 
-        Seguro, HabDesEmp
-    ];
+    const sql = `
+INSERT INTO empleados 
+(Cod_Emp, Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp, Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp, Seguro, HabDesEmp) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
+    
+    const values = [
+        Cod_Emp, Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp, 
+        Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp, 
+        Seguro, HabDesEmp
+    ];
 
-    try {
-        const [result] = await pool.query(sql, values); 
+    try {
+        const [result] = await pool.query(sql, values); 
 
-        // Respuesta exitosa
-        res.status(201).json({ 
-            success: true,
-            message: 'Empleado registrado con éxito', 
-            // Se envía el código generado para confirmar
-            Cod_Emp_Generado: Cod_Emp 
-        });
+        res.status(201).json({ 
+            success: true,
+            message: 'Empleado registrado con éxito', 
+            Cod_Emp_Ingresado: Cod_Emp 
+        });
 
-    } catch (error) {
-        console.error('Error al insertar empleado en la base de datos:', error);
-        // Enviamos el mensaje de error de MySQL para facilitar la depuración
-        res.status(500).json({ 
-            success: false,
-            message: 'Error interno del servidor al registrar empleado.', 
-            sqlError: error.sqlMessage || error.message // Incluye el error específico de MySQL
-        });
-    }
+    } catch (error) {
+        console.error('Error al insertar empleado en la base de datos:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error interno del servidor al registrar empleado.', 
+            sqlError: error.sqlMessage || error.message 
+        });
+    }
 });
 
 // ------------------------------------------------------------------
-// 7. Endpoint para OBTENER los datos de la Empresa
+// 7. Endpoint para Empresa
 // ------------------------------------------------------------------
 app.get('/api/empresa', async (req, res) => {
-  // Siempre buscamos el ID 1, ya que solo hay una empresa
-  const sql = "SELECT * FROM Empresa WHERE id_empresa = 1"; 
+  const sql = "SELECT * FROM Empresa WHERE id_empresa = 1"; 
 
-  try {
-    const [rows] = await pool.query(sql);
-    if (rows.length > 0) {
-      res.json({ success: true, data: rows[0] });
-    } else {
-      // Esto pasaría si la tabla está vacía (el script SQL lo previene)
-      res.status(404).json({ success: false, message: 'No se encontraron datos de la empresa.' });
-    }
-  } catch (error) {
-    console.error('Error al obtener datos de la empresa:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
-  }
+  try {
+    const [rows] = await pool.query(sql);
+    if (rows.length > 0) {
+      res.json({ success: true, data: rows[0] });
+    } else {
+      res.status(404).json({ success: false, message: 'No se encontraron datos de la empresa.' });
+    }
+  } catch (error) {
+    console.error('Error al obtener datos de la empresa:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+  }
+});
+
+app.post('/api/empresa', async (req, res) => {
+    const { Cod_Emp, Nom_Emp } = req.body;
+
+    if (!Cod_Emp || !Nom_Emp) {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Código (RTN) y Nombre.' });
+    }
+
+    const sql = `
+INSERT INTO Empresa (Cod_Emp, Nom_Emp) 
+VALUES (?, ?)
+`;
+    
+    const values = [Cod_Emp, Nom_Emp];
+
+    try {
+        const [result] = await pool.query(sql, values); 
+
+        res.status(201).json({ 
+            success: true,
+            message: 'Empresa registrada con éxito', 
+            Cod_Emp_Ingresado: Cod_Emp 
+        });
+
+    } catch (error) {
+        console.error('Error al insertar empresa en la base de datos:', error);
+        
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ 
+                success: false,
+                message: 'Error: El Código (RTN) de esa empresa ya existe en la base de datos.'
+            });
+        }
+        
+        res.status(500).json({ 
+            success: false,
+            message: 'Error interno del servidor al registrar empresa.', 
+            sqlError: error.sqlMessage || error.message
+        });
+    }
 });
 
 // ------------------------------------------------------------------
-// 7. Endpoint para Registrar Empresa (NUEVO - Actualizado)
+// 8. ENDPOINTS DE CLIENTES / HUÉSPEDES
 // ------------------------------------------------------------------
-app.post('/api/empresa', async (req, res) => {
-    // Leemos AMBOS campos del formulario
-    const { Cod_Emp, Nom_Emp } = req.body;
 
-    // Validación básica
-    if (!Cod_Emp || !Nom_Emp) {
-        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Código (RTN) y Nombre.' });
-    }
-
-    // Sentencia SQL (Usa los datos del formulario)
-    const sql = `
-        INSERT INTO Empresa (Cod_Emp, Nom_Emp) 
-        VALUES (?, ?)
-    `;
-    
-    // Array de valores (Usa los datos del formulario)
-    const values = [Cod_Emp, Nom_Emp];
-
+/**
+ * Endpoint para obtener la lista básica de Clientes (para Select)
+ */
+app.get('/api/clientes-lista', async (req, res) => {
     try {
-        const [result] = await pool.query(sql, values); 
+        const sql = `
+SELECT Cod_Cli, Nom_Cli 
+FROM clientes 
+ORDER BY Nom_Cli ASC
+`;
 
-        // Respuesta exitosa
-        res.status(201).json({ 
-            success: true,
-            message: 'Empresa registrada con éxito', 
-            Cod_Emp_Ingresado: Cod_Emp 
-        });
+        const [rows] = await pool.query(sql);
+        
+        res.json({ success: true, data: rows }); 
 
     } catch (error) {
-        console.error('Error al insertar empresa en la base de datos:', error);
-        
-        // Manejo de error de llave duplicada (si el RTN ya existe)
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ // 409 Conflict
-                success: false,
-                message: 'Error: El Código (RTN) de esa empresa ya existe en la base de datos.'
-            });
-        }
-        
-        // Otro error
-        res.status(500).json({ 
-            success: false,
-            message: 'Error interno del servidor al registrar empresa.', 
-            sqlError: error.sqlMessage || error.message
-        });
+        console.error('Error al obtener la lista de clientes:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor al obtener lista de clientes.' });
     }
 });
 
-// backend/server.js
 
-// ... (El código de login y empleados se mantiene igual)
+/**
+ * Endpoint para obtener DETALLES de un Cliente por Cod_Cli
+ */
+app.get('/api/cliente/:codCli', async (req, res) => {
+    const { codCli } = req.params; 
+    
+    try {
+        const sql = `
+SELECT Cod_Cli, Nom_Cli, Tel1_Huesped, Nacionalidad, Procedencia 
+FROM clientes 
+WHERE Cod_Cli = ?
+`;
 
-// ------------------------------------------------------------------
-// NUEVO ENDPOINT para Registrar HUÉSPEDES (TABLA CLIENTES)
-// ------------------------------------------------------------------
+        const [rows] = await pool.query(sql, [codCli]);
+        
+        if (rows.length > 0) {
+            res.json({ success: true, data: rows[0] });
+        } else {
+            res.status(404).json({ success: false, message: 'Cliente no encontrado.' });
+        }
+
+    } catch (error) {
+        console.error('Error al obtener los detalles del cliente:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+/**
+ * Endpoint para Registrar HUÉSPEDES
+ */
 app.post('/api/huespedes', async (req, res) => {
-    // 💡 IMPORTANTE: Los nombres de las variables deben coincidir con el 'name' 
-    // en los inputs de Huespedes.jsx (y las columnas de la tabla clientes).
-    const { 
-        Cod_Cli, Tipo_Cli, Nom_Cli, Tel1_Huesped, Tel2_Huesped, 
-        Tel3_Huesped, Email_Huesped, Empresa_Huesped, Nacionalidad, 
-        Procedencia, Observaciones
-    } = req.body;
+    const { 
+        Cod_Cli, Tipo_Cli, Nom_Cli, Tel1_Huesped, Tel2_Huesped, 
+        Tel3_Huesped, Email_Huesped, Empresa_Huesped, Nacionalidad, 
+        Procedencia, Observaciones
+    } = req.body;
 
-    // Validación básica de campos requeridos (Nom_Cli y Tel1_Huesped son los más críticos)
-    if (!Nom_Cli || !Tel1_Huesped) {
-        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre y Teléfono Principal.' });
-    }
+    if (!Nom_Cli || !Tel1_Huesped) {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre y Teléfono Principal.' });
+    }
+    
+    const sql = `
+INSERT INTO clientes 
+(Cod_Cli, Tipo_Cli, Nom_Cli, Tel1_Huesped, Tel2_Huesped, Tel3_Huesped, Email_Huesped, Empresa_Huesped, Nacionalidad, Procedencia, Observaciones) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
 
-    // 💡 NOTA: Usaremos el Cod_Cli generado en el Frontend para simplificar el proceso.
-    
-    // Sentencia SQL: Asegura que la tabla y columnas sean las de la BD (clientes)
-    const sql = `
-        INSERT INTO clientes 
-        (Cod_Cli, Tipo_Cli, Nom_Cli, Tel1_Huesped, Tel2_Huesped, Tel3_Huesped, Email_Huesped, Empresa_Huesped, Nacionalidad, Procedencia, Observaciones) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    
-    // Array de valores: Debe coincidir EXACTAMENTE con el orden del SQL de arriba
-    const values = [
-        Cod_Cli, 
-        Tipo_Cli, 
-        Nom_Cli, 
-        Tel1_Huesped, 
-        Tel2_Huesped, 
-        Tel3_Huesped, 
-        Email_Huesped, 
-        Empresa_Huesped, 
-        Nacionalidad, 
-        Procedencia, 
-        Observaciones
-    ];
+    const values = [
+        Cod_Cli, 
+        Tipo_Cli, 
+        Nom_Cli, 
+        Tel1_Huesped, 
+        Tel2_Huesped, 
+        Tel3_Huesped, 
+        Email_Huesped, 
+        Empresa_Huesped, 
+        Nacionalidad, 
+        Procedencia, 
+        Observaciones
+    ];
 
-    try {
-        const [result] = await pool.query(sql, values); 
+    try {
+        const [result] = await pool.query(sql, values); 
 
-        res.status(201).json({ 
-            success: true,
-            message: 'Huésped registrado con éxito', 
-            Cod_Cli_Ingresado: Cod_Cli // Devuelve el código ingresado para confirmación
-        });
+        res.status(201).json({ 
+            success: true,
+            message: 'Huésped registrado con éxito', 
+            Cod_Cli_Ingresado: Cod_Cli
+        });
 
-    } catch (error) {
-        console.error('Error al insertar huésped en la base de datos:', error);
-        res.status(500).json({ 
-            success: false,
-            message: 'Error interno del servidor al registrar huésped.', 
-            sqlError: error.sqlMessage || error.message
-        });
-    }
+    } catch (error) {
+        console.error('Error al insertar huésped en la base de datos:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error interno del servidor al registrar huésped.', 
+            sqlError: error.sqlMessage || error.message
+        });
+    }
 });
 
-// ------------------------------------------------------------------
-// 8. Endpoint para Registrar Empresa (NUEVO - Actualizado)
-// ------------------------------------------------------------------
-app.post('/api/empresa', async (req, res) => {
-    // Leemos AMBOS campos del formulario
-    const { Cod_Emp, Nom_Emp } = req.body;
+// ==================================================================
+// MÓDULO DE GESTIÓN HOTELERA (Habitaciones, Reservas, Caja)
+// ==================================================================
 
-    // Validación básica
-    if (!Cod_Emp || !Nom_Emp) {
-        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Código (RTN) y Nombre.' });
+// 1. ENDPOINT MAESTRO: Obtener Tablero de Habitaciones
+app.get('/api/habitaciones', async (req, res) => {
+  try {
+    const sql = `
+SELECT 
+    h.Cod_Hab, 
+    h.Est_Hab, 
+    t.Tipo_Hab, 
+    t.Precio_Hab,
+    r.Cod_Res, 
+    r.Fec_Ini_Res, 
+    r.Fec_Fin_Res, 
+    c.Nom_Cli, 
+    c.Cod_Cli
+FROM Habitaciones h
+INNER JOIN Habitaciones_Tipo t ON h.Cod_Tipo_Hab = t.Cod_Tipo_Hab
+LEFT JOIN Reserva r ON h.Cod_Hab = r.Cod_Hab AND r.Cod_Est = 2 
+LEFT JOIN Clientes c ON r.Cod_Cli = c.Cod_Cli
+ORDER BY h.Cod_Hab ASC
+`;
+
+    const [rows] = await pool.query(sql);
+    res.json({ success: true, data: rows });
+
+  } catch (error) {
+    console.error('Error al obtener habitaciones:', error);
+    res.status(500).json({ success: false, message: 'Error de servidor' });
+  }
+});
+
+// 2. ENDPOINT: NUEVA RESERVA (Check-In)
+app.post('/api/reservar', async (req, res) => {
+  const { Cod_Hab, Cod_Cli, Fec_Ini, Fec_Fin, Cod_Usu } = req.body; 
+  
+  // A. Generar ID único para la reserva
+  const Cod_Res = Math.floor(Date.now() / 1000); 
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction(); // Iniciar Transacción Segura
+
+    // 1. Validar que la habitación siga libre (Evitar doble venta)
+    const [check] = await connection.query('SELECT Est_Hab FROM Habitaciones WHERE Cod_Hab = ?', [Cod_Hab]);
+    if (check[0].Est_Hab !== 1) {
+      throw new Error("La habitación ya no está disponible.");
+    }
+
+    // 2. Obtener el precio actual de la habitación
+    const [tipo] = await connection.query(
+      'SELECT t.Precio_Hab FROM Habitaciones h JOIN Habitaciones_Tipo t ON h.Cod_Tipo_Hab = t.Cod_Tipo_Hab WHERE h.Cod_Hab = ?', 
+      [Cod_Hab]
+    );
+    const Precio_Pactado = tipo[0].Precio_Hab;
+
+    // 3. Insertar la Reserva 
+    const sqlInsert = `
+INSERT INTO Reserva (
+    Cod_Res, Fec_Ini_Res, Fec_Fin_Res, Cod_Hab, Cod_Cli, 
+    Nom_Usu, Precio_Unitario, Descuento, Recargo, 
+    Pagado_NoPagado, Hora_Entrada, Hora_Salida, Cod_Est, TipoPago
+)
+VALUES (
+    ?, ?, ?, ?, ?, 
+    ?, ?, 0, 0, 
+    0, CURTIME(), '12:00:00', 2, NULL
+)
+`;
+    
+    // Parámetros: ID, Fecha Inicio, Fecha Fin, Habitación, Cliente, Usuario, Precio
+    await connection.query(sqlInsert, [
+      Cod_Res, Fec_Ini, Fec_Fin, Cod_Hab, Cod_Cli, 
+      Cod_Usu || 'Admin', Precio_Pactado
+    ]);
+
+    // 4. Cambiar Semáforo a ROJO (Ocupado = 2) en tabla Habitaciones
+    await connection.query('UPDATE Habitaciones SET Est_Hab = 2 WHERE Cod_Hab = ?', [Cod_Hab]);
+
+    await connection.commit(); // Guardar cambios definitivamente
+    res.json({ success: true, message: 'Reserva creada exitosamente' });
+
+  } catch (error) {
+    await connection.rollback(); // Cancelar todo si algo falla
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message || 'Error al reservar' });
+  } finally {
+    connection.release();
+  }
+});
+
+// 3. ENDPOINT: FACTURAR Y SALIDA (Check-Out)
+// CAMBIO: Ahora utiliza el Cod_Usu enviado desde el frontend y gestiona errores FK.
+app.post('/api/facturar', async (req, res) => {
+  const { Cod_Res, Cod_Hab, Total_Pagar, Cod_Cli, TipoPago, EstadiaDias, Cod_Usu } = req.body;
+  
+  const Cod_Fact = Math.floor(Date.now() / 1000); // Generar ID Factura único
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Validación para asegurar que el Cod_Usu existe antes de insertarlo
+    if (!Cod_Usu) {
+        throw new Error("El Código de Usuario que realiza la facturación es requerido.");
     }
 
-    // Sentencia SQL (Usa los datos del formulario)
-    const sql = `
-        INSERT INTO Empresa (Cod_Emp, Nom_Emp) 
-        VALUES (?, ?)
-    `;
-    
-    // Array de valores (Usa los datos del formulario)
-    const values = [Cod_Emp, Nom_Emp];
+    // 1. Guardar Encabezado de Factura (Tabla: Factura)
+    // Se inserta el Cod_Usu recibido desde el frontend
+    await connection.query(`
+INSERT INTO Factura (Cod_Fact, Fch_Fact, Cod_Cli, Cod_Usu)
+VALUES (?, DATE_FORMAT(NOW(), '%Y-%m-%d'), ?, ?)
+`, [Cod_Fact, Cod_Cli, Cod_Usu]);
 
-    try {
-        const [result] = await pool.query(sql, values); 
+    // 2. Guardar el Detalle (Tabla: Factura_Detalle)
+    await connection.query(`
+INSERT INTO Factura_Detalle (Cod_Fact, Cod_Hab, EstadiaHot, Recargo_Fact, Total_Unit)
+VALUES (?, ?, ?, 0, ?)
+`, [Cod_Fact, Cod_Hab, EstadiaDias || 1, Total_Pagar]);
 
-        // Respuesta exitosa
-        res.status(201).json({ 
-            success: true,
-            message: 'Empresa registrada con éxito', 
-            Cod_Emp_Ingresado: Cod_Emp 
-        });
+    // 3. Cerrar la Reserva (Tabla: Reserva)
+    await connection.query(`
+UPDATE Reserva 
+SET Cod_Est = 1, 
+    Pagado_NoPagado = 1, 
+    TipoPago = ? 
+WHERE Cod_Res = ?
+`, [TipoPago, Cod_Res]);
 
-    } catch (error) {
-        console.error('Error al insertar empresa en la base de datos:', error);
-        
-        // Manejo de error de llave duplicada (si el RTN ya existe)
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ // 409 Conflict
-                success: false,
-                message: 'Error: El Código (RTN) de esa empresa ya existe en la base de datos.'
-            });
-        }
-        
-        // Otro error
-        res.status(500).json({ 
-            success: false,
-            message: 'Error interno del servidor al registrar empresa.', 
-            sqlError: error.sqlMessage || error.message
-        });
-    }
+    // 4. Cambiar Semáforo a AZUL (Limpieza = 3) en tabla Habitaciones
+    await connection.query('UPDATE Habitaciones SET Est_Hab = 3 WHERE Cod_Hab = ?', [Cod_Hab]);
+
+    await connection.commit();
+    res.json({ success: true, message: 'Pago registrado y habitación en limpieza.' });
+
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error durante la facturación:', error);
+    // Si falla la Foreign Key (1452), se da un mensaje específico.
+    if (error.errno === 1452) {
+        return res.status(500).json({ success: false, message: `Error: El Código de Usuario '${Cod_Usu}' no existe en la tabla 'usuarios'.` });
+    }
+    res.status(500).json({ success: false, message: error.message || 'Error al facturar' });
+  } finally {
+    connection.release();
+  }
+});
+
+// 4. ENDPOINT: CONFIRMAR LIMPIEZA
+app.post('/api/habitacion/liberar', async (req, res) => {
+    const { Cod_Hab } = req.body;
+    try {
+        // Cambiar Semáforo a VERDE (Disponible = 1)
+        await pool.query('UPDATE Habitaciones SET Est_Hab = 1 WHERE Cod_Hab = ?', [Cod_Hab]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false });
+    }
 });
 
 
