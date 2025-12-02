@@ -118,7 +118,27 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 // ------------------------------------------------------------------
 // 7. Endpoint para Empresa
 // ------------------------------------------------------------------
+/**
+ * Endpoint NUEVO: Obtiene la lista de Códigos y Nombres de Empresas.
+ */
+app.get('/api/empresas-lista', async (req, res) => {
+    try {
+        // CORREGIDO: Consulta en una sola línea.
+        const sql = `SELECT Cod_Emp, Nom_Emp FROM Empresa ORDER BY Nom_Emp ASC`;
+
+        const [rows] = await pool.query(sql);
+        
+        res.json({ success: true, data: rows }); 
+
+    } catch (error) {
+        console.error('Error al obtener la lista de empresas:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor al obtener lista de empresas.' });
+    }
+});
+
+
 app.get('/api/empresa', async (req, res) => {
+  // Consulta en una sola línea.
   const sql = "SELECT * FROM Empresa WHERE id_empresa = 1"; 
 
   try {
@@ -184,11 +204,8 @@ VALUES (?, ?)
  */
 app.get('/api/clientes-lista', async (req, res) => {
     try {
-        const sql = `
-SELECT Cod_Cli, Nom_Cli 
-FROM clientes 
-ORDER BY Nom_Cli ASC
-`;
+        // CORREGIDO: Consulta en una sola línea.
+        const sql = `SELECT Cod_Cli, Nom_Cli FROM clientes ORDER BY Nom_Cli ASC`;
 
         const [rows] = await pool.query(sql);
         
@@ -208,11 +225,8 @@ app.get('/api/cliente/:codCli', async (req, res) => {
     const { codCli } = req.params; 
     
     try {
-        const sql = `
-SELECT Cod_Cli, Nom_Cli, Tel1_Huesped, Nacionalidad, Procedencia 
-FROM clientes 
-WHERE Cod_Cli = ?
-`;
+        // CORREGIDO: Consulta en una sola línea.
+        const sql = `SELECT Cod_Cli, Nom_Cli, Tel1_Huesped, Nacionalidad, Procedencia FROM clientes WHERE Cod_Cli = ?`;
 
         const [rows] = await pool.query(sql, [codCli]);
         
@@ -288,23 +302,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 // 1. ENDPOINT MAESTRO: Obtener Tablero de Habitaciones
 app.get('/api/habitaciones', async (req, res) => {
   try {
-    const sql = `
-SELECT 
-    h.Cod_Hab, 
-    h.Est_Hab, 
-    t.Tipo_Hab, 
-    t.Precio_Hab,
-    r.Cod_Res, 
-    r.Fec_Ini_Res, 
-    r.Fec_Fin_Res, 
-    c.Nom_Cli, 
-    c.Cod_Cli
-FROM Habitaciones h
-INNER JOIN Habitaciones_Tipo t ON h.Cod_Tipo_Hab = t.Cod_Tipo_Hab
-LEFT JOIN Reserva r ON h.Cod_Hab = r.Cod_Hab AND r.Cod_Est = 2 
-LEFT JOIN Clientes c ON r.Cod_Cli = c.Cod_Cli
-ORDER BY h.Cod_Hab ASC
-`;
+    // CORREGIDO: Consulta en una sola línea para evitar ER_PARSE_ERROR por indentación
+    const sql = `SELECT h.Cod_Hab, h.Est_Hab, t.Tipo_Hab, t.Precio_Hab, r.Cod_Res, r.Fec_Ini_Res, r.Fec_Fin_Res, c.Nom_Cli, c.Cod_Cli FROM Habitaciones h INNER JOIN Habitaciones_Tipo t ON h.Cod_Tipo_Hab = t.Cod_Tipo_Hab LEFT JOIN Reserva r ON h.Cod_Hab = r.Cod_Hab AND r.Cod_Est = 2 LEFT JOIN Clientes c ON r.Cod_Cli = c.Cod_Cli ORDER BY h.Cod_Hab ASC`;
 
     const [rows] = await pool.query(sql);
     res.json({ success: true, data: rows });
@@ -375,7 +374,6 @@ VALUES (
 });
 
 // 3. ENDPOINT: FACTURAR Y SALIDA (Check-Out)
-// CAMBIO: Ahora utiliza el Cod_Usu enviado desde el frontend y gestiona errores FK.
 app.post('/api/facturar', async (req, res) => {
   const { Cod_Res, Cod_Hab, Total_Pagar, Cod_Cli, TipoPago, EstadiaDias, Cod_Usu } = req.body;
   
@@ -385,13 +383,13 @@ app.post('/api/facturar', async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    // Validación para asegurar que el Cod_Usu existe antes de insertarlo
-    if (!Cod_Usu) {
-        throw new Error("El Código de Usuario que realiza la facturación es requerido.");
-    }
+    // Validación para asegurar que el Cod_Usu existe antes de insertarlo
+    if (!Cod_Usu) {
+        throw new Error("El Código de Usuario que realiza la facturación es requerido.");
+    }
 
     // 1. Guardar Encabezado de Factura (Tabla: Factura)
-    // Se inserta el Cod_Usu recibido desde el frontend
+    // Se inserta el Cod_Usu recibido desde el frontend
     await connection.query(`
 INSERT INTO Factura (Cod_Fact, Fch_Fact, Cod_Cli, Cod_Usu)
 VALUES (?, DATE_FORMAT(NOW(), '%Y-%m-%d'), ?, ?)
@@ -423,7 +421,7 @@ WHERE Cod_Res = ?
     console.error('Error durante la facturación:', error);
     // Si falla la Foreign Key (1452), se da un mensaje específico.
     if (error.errno === 1452) {
-        return res.status(500).json({ success: false, message: `Error: El Código de Usuario '${Cod_Usu}' no existe en la tabla 'usuarios'.` });
+        return res.status(500).json({ success: false, message: `Error: El Código de Usuario '${Cod_Usu}' no existe en la tabla 'usuarios'.` });
     }
     res.status(500).json({ success: false, message: error.message || 'Error al facturar' });
   } finally {

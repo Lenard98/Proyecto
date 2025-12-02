@@ -1,7 +1,10 @@
 // components/Huespedes/Huespedes.jsx
 
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
+import axios from 'axios';
 import './Huespedes.css'; 
+
+const API_URL = 'http://localhost:3002/api';
 
 // Función para generar un ID de huésped temporal
 const generateMockId = () => 'CLI-' + Math.random().toString(36).substring(2, 9).toUpperCase();
@@ -50,6 +53,9 @@ FormInput.displayName = 'FormInput';
 // --- COMPONENTE PRINCIPAL ---
 export default function Huespedes() {
     
+    // ESTADO NUEVO: Lista de empresas
+    const [empresasLista, setEmpresasLista] = useState([]);
+
     // Estado inicial de los datos del huésped
     const [guestData, setGuestData] = useState({
         Cod_Cli: generateMockId(), 
@@ -68,18 +74,48 @@ export default function Huespedes() {
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState('');
 
+    // ******************************************************
+    // EFECTO: Cargar lista de empresas al montar el componente
+    // ******************************************************
+    useEffect(() => {
+        const fetchEmpresas = async () => {
+            try {
+                const res = await axios.get(`${API_URL}/empresas-lista`);
+                if (res.data.success) {
+                    setEmpresasLista(res.data.data);
+                }
+            } catch (error) {
+                console.error('Error al cargar la lista de empresas:', error);
+            }
+        };
+        fetchEmpresas();
+    }, []);
+
+
     // Manejador genérico de cambios en el formulario
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setGuestData(prevData => ({
-            ...prevData,
-            [name]: value,
-        }));
+
+        setGuestData(prevData => {
+            let newData = { ...prevData, [name]: value };
+
+            // LÓGICA CLAVE: Si el tipo cambia de Empresa a Particular, se limpia Empresa_Huesped.
+            if (name === 'Tipo_Cli' && value === 'Particular') {
+                newData.Empresa_Huesped = ''; 
+            }
+            if (name === 'Tipo_Cli' && value === 'Empresa' && !newData.Empresa_Huesped && empresasLista.length > 0) {
+                 // Si se cambia a Empresa, preseleccionar la primera si existe
+                 // Nota: Esto puede ser opcional dependiendo de la UX deseada
+                 // newData.Empresa_Huesped = empresasLista[0].Nom_Emp; 
+            }
+
+            return newData;
+        });
     };
     
     /**
-     * 🚀 PASO 1: Nueva función para solo limpiar los campos (Resetear el estado del formulario)
-     */
+     * Función para solo limpiar los campos (Resetear el estado del formulario)
+     */
     const clearForm = () => {
         setGuestData({
             Cod_Cli: generateMockId(),
@@ -97,22 +133,19 @@ export default function Huespedes() {
     };
 
 
-    /**
-     * 🚀 PASO 2: Modificar handleCancel para usar clearForm
-     */
     // Manejador de cancelación y reseteo de formulario
     const handleCancel = () => {
         setMessage('Formulario cancelado. Se han limpiado los campos.');
-        clearForm(); // Solo llamamos a la limpieza
+        clearForm(); 
     };
 
     /**
-     * 🚀 PASO 3: Modificar handleSubmit para usar clearForm SÓLO después del éxito
-     */
+     * Manejador de envío del formulario
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSaving(true);
-        setMessage(''); // Limpiar cualquier mensaje anterior
+        setMessage(''); 
 
         console.log('--- Datos a enviar al Backend para guardar en la BD (Tabla clientes) ---');
         console.log(guestData);
@@ -127,7 +160,7 @@ export default function Huespedes() {
                 body: JSON.stringify(guestData),
             });
 
-            const data = await response.json();
+            const data = await response.json();
 
             if (!response.ok || !data.success) {
                 // El servidor devolvió un error (4xx, 5xx) o success: false
@@ -194,7 +227,23 @@ export default function Huespedes() {
                             </FormInput>
 
                             {guestData.Tipo_Cli === 'Empresa' ? (
-                                <FormInput onChangeHandler={handleChange} label="Nombre de la Empresa (Empresa_Huesped)" name="Empresa_Huesped" value={guestData.Empresa_Huesped} required />
+                                // CAMBIO CLAVE: Dropdown de Empresas
+                                <FormInput 
+                                    onChangeHandler={handleChange} 
+                                    label="Nombre de la Empresa (Empresa_Huesped)" 
+                                    name="Empresa_Huesped" 
+                                    value={guestData.Empresa_Huesped} 
+                                    type="select" 
+                                    required
+                                >
+                                    <option value="">-- Seleccionar Empresa --</option>
+                                    {/* Mapea la lista de empresas obtenida del backend */}
+                                    {empresasLista.map(e => (
+                                        <option key={e.Cod_Emp} value={e.Nom_Emp}>
+                                            {e.Nom_Emp} ({e.Cod_Emp})
+                                        </option>
+                                    ))}
+                                </FormInput>
                             ) : (
                                 <div className="form-group"></div>
                             )}
