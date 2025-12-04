@@ -1,0 +1,147 @@
+.tablero-container {
+  padding: 20px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.habitaciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* Tarjeta Base */
+.hab-card {
+  border-radius: 10px;
+  padding: 15px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 140px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+  position: relative;
+}
+
+.hab-card:hover {
+  transform: scale(1.03);
+}
+
+/* Colores de Estado (Iguales a la imagen) */
+.hab-card.green { background-color: #4CAF50; } /* Libre */
+.hab-card.red { background-color: #E53935; }   /* Ocupado */
+.hab-card.cyan { background-color: #29B6F6; }  /* Limpieza */
+.hab-card.orange { background-color: #FFA726; }/* Mantenimiento */
+
+.hab-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.hab-icon {
+  font-size: 3rem;
+  align-self: center;
+  opacity: 0.8;
+}
+
+.hab-info-ocupada {
+  font-size: 0.8rem;
+  background: rgba(0,0,0,0.2);
+  padding: 5px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hab-precio {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Estilos de Modales */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-content label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-confirm {
+  background-color: #5E637A;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Resumen Pago */
+.resumen-pago {
+  margin-top: 20px;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.fila {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.fila.total {
+  font-weight: bold;
+  color: #000;
+  font-size: 1.2rem;
+  margin-top: 10px;
+  border-top: 2px solid #ddd;
+  padding-top: 5px;
+}
