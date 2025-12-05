@@ -404,7 +404,8 @@ VALUES (
 // 3. ENDPOINT: FACTURAR Y SALIDA (Check-Out)
 app.post('/api/facturar', async (req, res) => {
     // Se utiliza Fecha_Salida_Real que viene del frontend (la fecha de hoy)
-    const { Cod_Res, Cod_Hab, Total_Pagar, Cod_Cli, TipoPago, EstadiaDias, Cod_Usu, Fecha_Salida_Real } = req.body; 
+    // --- MODIFICACIÓN: AÑADIDO 'Extras' AL DESTRUCTURING ---
+    const { Cod_Res, Cod_Hab, Total_Pagar, Cod_Cli, TipoPago, EstadiaDias, Cod_Usu, Fecha_Salida_Real, Extras } = req.body; 
 
     const Cod_Fact = Math.floor(Date.now() / 1000); // Generar ID Factura único
 
@@ -441,7 +442,28 @@ SET Cod_Est = 1,
 WHERE Cod_Res = ?
 `, [TipoPago, Fecha_Salida_Real, Cod_Res]);
 
-        // 4. El estado de la habitación (Est_Hab=2) se mantiene para que el usuario pueda cambiarlo a LIMPIEZA/DISPONIBLE.
+        // 4. --- MODIFICACIÓN: GUARDAR CARGOS EXTRA (TABLA recargos) ---
+        if (Extras && Extras.length > 0) {
+            // A. Obtenemos el ÚLTIMO ID que existe en la tabla recargos
+            // Nota: Si la tabla está vacía, maxId será null, así que usamos || 0
+            const [maxRow] = await connection.query('SELECT MAX(Cod_Cargo) as maxId FROM recargos');
+            let nextId = (maxRow[0].maxId || 0) + 1; // El siguiente ID disponible
+
+            for (const item of Extras) {
+                const sqlCargo = `INSERT INTO recargos (Cod_Cargo, Desc_Recargo, Pre_Recargo, Cantidad, Cod_Res) VALUES (?, ?, ?, ?, ?)`;
+                
+                await connection.query(sqlCargo, [
+                    nextId, 
+                    item.descripcion, 
+                    item.precio, 
+                    item.cantidad, 
+                    Cod_Res
+                ]);
+                
+                // Incrementamos el ID para el siguiente cargo en el ciclo (AUTO-INCREMENTAL MANUAL)
+                nextId++; 
+            }
+        }
 
         await connection.commit();
         
@@ -500,6 +522,44 @@ app.put('/api/habitaciones/cambiar-estado/:codHab', async (req, res) => {
     } catch (error) {
         console.error('Error al actualizar estado manualmente:', error);
         res.status(500).json({ success: false, message: 'Error interno del servidor al cambiar estado.' });
+    }
+});
+
+// ------------------------------------------------------------------
+// 6. NUEVO ENDPOINT (AGREGADO): ELIMINAR RESERVA Y LIBERAR HABITACIÓN
+// ------------------------------------------------------------------
+app.delete('/api/reservas/:codRes', async (req, res) => {
+    const { codRes } = req.params;
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Obtener qué habitación estaba ocupada por esta reserva
+        const [reserva] = await connection.query('SELECT Cod_Hab FROM Reserva WHERE Cod_Res = ?', [codRes]);
+        
+        if (reserva.length === 0) {
+            throw new Error("Reserva no encontrada.");
+        }
+        
+        const codHab = reserva[0].Cod_Hab;
+
+        // 2. Eliminar la reserva de la base de datos
+        await connection.query('DELETE FROM Reserva WHERE Cod_Res = ?', [codRes]);
+
+        // 3. Liberar la habitación (Ponerla en Estado 1 = Disponible)
+        // Esto es importante para que no quede ocupada por una reserva fantasma.
+        await connection.query('UPDATE Habitaciones SET Est_Hab = 1 WHERE Cod_Hab = ?', [codHab]);
+
+        await connection.commit();
+        res.json({ success: true, message: 'Reserva eliminada y habitación liberada.' });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error al eliminar reserva:', error);
+        res.status(500).json({ success: false, message: error.message || 'Error al eliminar reserva' });
+    } finally {
+        connection.release();
     }
 });
 
