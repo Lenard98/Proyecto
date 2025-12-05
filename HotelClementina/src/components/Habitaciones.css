@@ -40,10 +40,10 @@
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Colores de Estado (¡CIÁN PARA LIMPIEZA GARANTIZADO!) */
+/* Colores de Estado */
 .hab-card.green { background-color: #4CAF50 !important; }
-.hab-card.red { background-color: #E53935 !important; }   
-.hab-card.cyan { background-color:#00FFFF !important } 
+.hab-card.red { background-color: #E53935 !important; }
+.hab-card.cyan { background-color: #00BCD4 !important; }
 .hab-card.orange { background-color: #FFA726 !important; }
 
 .hab-header {
@@ -53,7 +53,7 @@
     font-size: 0.9rem;
 }
 
-/* --- Contenido de Tarjeta LISA (DISPONIBLE, LIMPIEZA, MANTENIMIENTO) --- */
+/* --- Contenido de Tarjeta LISA --- */
 .hab-centro-libre {
     display: flex;
     flex-direction: column;
@@ -64,7 +64,7 @@
 
 .hab-icon {
     font-size: 3rem;
-    color: white; /* FUERZA el color blanco del ícono */
+    color: white;
     opacity: 0.9;
 }
 
@@ -72,7 +72,7 @@
     text-align: center;
     font-weight: bold;
     font-size: 1.1rem;
-    color: white; /* FUERZA el color blanco del precio */
+    color: white;
     margin-top: 5px;
 }
 
@@ -102,7 +102,7 @@
 }
 
 /* ======================================= */
-/* ESTILOS DEL MODAL DE CAMBIO DE ESTADO   */
+/* ESTILOS DEL MODAL */
 /* ======================================= */
 .modal-overlay {
     position: fixed;
@@ -138,7 +138,7 @@
     color: #555;
 }
 
-/* --- Diseño de Botones de Estado (Grid) --- */
+/* --- Botones del Modal --- */
 .estado-opciones-grid {
     display: grid;
     grid-template-columns: 1fr 1fr; 
@@ -163,13 +163,11 @@
     user-select: none;
 }
 
-/* Colores de los botones del modal */
 .estado-btn.green { background-color: #4CAF50; } 
 .estado-btn.red { background-color: #E53935; } 
-.estado-btn.cyan { background-color: cyan; } 
+.estado-btn.cyan { background-color: #00BCD4; } 
 .estado-btn.orange { background-color: #FFA726; }
 
-/* Estilo para el estado SELECCIONADO (Activo) */
 .estado-btn.active {
     box-shadow: inset 0 0 0 4px white, inset 0 -4px 0 rgba(0, 0, 0, 0.2); 
     transform: scale(1.05);
@@ -192,7 +190,6 @@
     font-size: 1rem; 
 }
 
-/* --- Acciones del Modal (Botones Cancelar/Guardar) --- */
 .modal-actions {
     margin-top: 30px; 
     display: flex;
@@ -211,11 +208,6 @@
     transition: background-color 0.2s, transform 0.1s;
 }
 
-.btn-confirm:hover {
-    background-color: #4c5061;
-    transform: translateY(-1px);
-}
-
 .btn-cancel {
     background-color: #dc3545;
     color: white;
@@ -227,12 +219,6 @@
     transition: background-color 0.2s, transform 0.1s;
 }
 
-.btn-cancel:hover {
-    background-color: #c82333;
-    transform: translateY(-1px);
-}
-
-/* Estilo para el botón de confirmación deshabilitado */
 .btn-confirm:disabled {
     background-color: #274154;
     cursor: not-allowed;

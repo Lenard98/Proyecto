@@ -1,195 +1,243 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Habitaciones.css';
-// Importaciones de íconos necesarias para el tablero y el modal
+
+// Íconos para el tablero y modal
 import { FaBed, FaBroom, FaTools, FaCheckCircle, FaUser, FaClock, FaMoneyBillWave } from 'react-icons/fa';
 
 const API_URL = 'http://localhost:3002/api';
 
-// Estados disponibles para el selector en el modal
+// Estados disponibles para el modal
 const estadosDisponibles = [
-    { id: 1, nombre: 'DISPONIBLE', color: 'green', icono: <FaCheckCircle /> },
-    { id: 2, nombre: 'OCUPADO', color: 'red', icono: <FaUser /> },
-    { id: 3, nombre: 'LIMPIEZA', color: 'cyan', icono: <FaBroom /> },
-    { id: 4, nombre: 'MANTENIMIENTO', color: 'orange', icono: <FaTools /> },
+    { id: 1, nombre: 'DISPONIBLE', color: 'green', icono: <FaCheckCircle /> },
+    { id: 2, nombre: 'OCUPADO', color: 'red', icono: <FaUser /> },
+    { id: 3, nombre: 'LIMPIEZA', color: 'cyan', icono: <FaBroom /> },
+    { id: 4, nombre: 'MANTENIMIENTO', color: 'orange', icono: <FaTools /> },
 ];
 
 const Habitaciones = () => {
-    const [habitaciones, setHabitaciones] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedHabitacion, setSelectedHabitacion] = useState(null);
-    const [estadoSeleccionadoId, setEstadoSeleccionadoId] = useState(null);
+    const [habitaciones, setHabitaciones] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedHabitacion, setSelectedHabitacion] = useState(null);
+    const [estadoSeleccionadoId, setEstadoSeleccionadoId] = useState(null);
 
-    // Carga inicial y periódica de habitaciones
-    const fetchHabitaciones = async () => {
-        try {
-            const res = await axios.get(`${API_URL}/habitaciones`);
-            if (res.data.success) {
-                setHabitaciones(res.data.data);
-            }
-        } catch (error) { console.error("Error cargando datos:", error); }
-    };
+    // Cargar habitaciones periódicamente
+    const fetchHabitaciones = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/habitaciones`);
+            if (res.data.success) {
+                setHabitaciones(res.data.data);
+            }
+        } catch (error) {
+            console.error("Error cargando datos:", error);
+        }
+    };
 
-    useEffect(() => {
-        fetchHabitaciones();
-        // Sigue refrescando los datos cada 3 segundos
-        const intervalo = setInterval(fetchHabitaciones, 3000); 
-        return () => clearInterval(intervalo);
-    }, []);
+    useEffect(() => {
+        fetchHabitaciones();
+        const intervalo = setInterval(fetchHabitaciones, 3000);
+        return () => clearInterval(intervalo);
+    }, []);
 
-    const handleCardClick = (hab) => {
-        setSelectedHabitacion(hab);
-        setEstadoSeleccionadoId(hab.Est_Hab); // Inicializa el selector con el estado actual
-        setIsModalOpen(true);
-    };
+    const handleCardClick = (hab) => {
+        setSelectedHabitacion(hab);
+        setEstadoSeleccionadoId(hab.Est_Hab);
+        setIsModalOpen(true);
+    };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setSelectedHabitacion(null);
-        setEstadoSeleccionadoId(null);
-    };
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedHabitacion(null);
+        setEstadoSeleccionadoId(null);
+    };
 
-    const updateEstadoHabitacion = async () => {
-        if (!selectedHabitacion || !estadoSeleccionadoId) return;
+    const updateEstadoHabitacion = async () => {
+        if (!selectedHabitacion || !estadoSeleccionadoId) return;
 
-        const codHab = selectedHabitacion.Cod_Hab;
+        const codHab = selectedHabitacion.Cod_Hab;
 
-        try {
-            // 1. Llama al endpoint PUT del servidor para guardar el nuevo estado
-            const res = await axios.put(`${API_URL}/habitaciones/cambiar-estado/${codHab}`, {
-                nuevoEstado: estadoSeleccionadoId,
-            });
+        try {
+            const res = await axios.put(
+                `${API_URL}/habitaciones/cambiar-estado/${codHab}`,
+                { nuevoEstado: estadoSeleccionadoId }
+            );
 
-            if (res.data.success) {
-                // NOTA: Usa un modal o toast en lugar de alert() para mejor UX.
-                alert(`Estado de Habitación ${codHab} cambiado.`);
-                
-                // 2. IMPORTANTE: Usamos 'await' para esperar la recarga de datos.
-                await fetchHabitaciones(); 
-                
-                // 3. El modal se cierra SOLO después de que los datos actualizados han llegado.
-                handleCloseModal();
-            } else {
-                alert("Error al actualizar estado.");
-            }
-        } catch (error) {
-            console.error("Error al actualizar el estado:", error);
-            alert("Hubo un error de conexión con el servidor.");
-        }
-    };
+            if (res.data.success) {
+                alert(`Estado de Habitación ${codHab} cambiado.`);
 
-    const calcularEstadoActual = (hab) => {
-        // Solo aplica cálculo si está ocupada (Est_Hab === 2)
-        if (hab.Est_Hab !== 2) return null;
+                await fetchHabitaciones();
 
-        const fechaInicio = new Date(hab.Fec_Ini_Res);
-        const hoy = new Date();
-        const diferencia = hoy - fechaInicio;
-        // Calcula días de estancia, asegurando que sea al menos 1 día
-        let dias = Math.ceil(diferencia / (1000 * 3600 * 24));
-        if (dias < 1) dias = 1;
+                handleCloseModal();
+            } else {
+                alert("Error al actualizar estado.");
+            }
+        } catch (error) {
+            console.error("Error al actualizar estado:", error);
+            alert("Hubo un error de conexión con el servidor.");
+        }
+    };
 
-        // Calcula consumo solo por noche (sin incluir servicios adicionales)
-        const consumoActual = dias * parseFloat(hab.Precio_Hab);
+    // --- FUNCIÓN DE CÁLCULO ACTUALIZADA (Muestra noches y subtotal completos) ---
+    const calcularEstadoActual = (hab) => {
+        // Solo calcula si el estado de la habitación es OCUPADO y tiene una reserva asociada
+        if (hab.Est_Hab !== 2 || !hab.Cod_Res) return null; 
 
-        return { dias, consumoActual };
-    };
+        const fechaInicio = new Date(hab.Fec_Ini_Res);
+        const fechaFinPactada = new Date(hab.Fec_Fin_Res);
+        const precioPactado = parseFloat(hab.Precio_Unitario || hab.Precio_Hab);
+        
+        const fechaFinRes = hab.Fec_Fin_Res ? new Date(hab.Fec_Fin_Res).toISOString().split('T')[0] : 'N/A';
+        const isPagado = hab.Pagado_NoPagado == 1;
 
-    // Función para obtener la configuración de estado (color/texto/ícono)
-    const getStatusConfig = (estado) => {
-        switch (estado) {
-            case 1: return { color: 'green', texto: 'DISPONIBLE', icon: <FaCheckCircle /> };
-            case 2: return { color: 'red', texto: 'OCUPADO', icon: <FaUser /> };
-            case 3: return { color: 'blue', texto: 'LIMPIEZA', icon: <FaBroom /> }; 
-            case 4: return { color: 'orange', texto: 'MANTENIMIENTO', icon: <FaTools /> };
-            default: return { color: 'gray', texto: 'DESC.', icon: <FaBed /> };
-        }
-    };
+        // Caso 1: Reserva Pagada/Cerrada
+        if (isPagado) {
+            return { 
+                dias: 0, 
+                consumoTotal: 0, 
+                fechaFinRes, 
+                isPagado: true 
+            };
+        }
 
-    return (
-        <div className="tablero-container">
-            <h2>Tablero de Habitaciones</h2>
-            <div className="habitaciones-grid">
-                {habitaciones.map((hab) => {
-                    const config = getStatusConfig(hab.Est_Hab);
-                    const info = calcularEstadoActual(hab);
+        // Caso 2: Reserva Activa (Mostrar noches totales y subtotal completo)
+        
+        // Cálculo de Días Totales de la Reserva (para mostrar 8 noches)
+        fechaInicio.setHours(0, 0, 0, 0);
+        fechaFinPactada.setHours(0, 0, 0, 0);
 
-                    return (
-                        <div 
-                            key={hab.Cod_Hab} 
-                            className={`hab-card ${config.color}`} 
-                            onClick={() => handleCardClick(hab)}
-                        >
-                            <div className="hab-header">
-                                <span>{config.texto} - {hab.Cod_Hab}</span>
-                                <span>{hab.Tipo_Hab}</span>
-                            </div>
+        const diffTime = fechaFinPactada - fechaInicio;
+        let diasTotales = Math.max(1, Math.ceil(diffTime / (1000 * 3600 * 24)));
+        
+        // Cálculo del Subtotal de la Reserva Completa (Precio * Días Totales)
+        const subtotalReservaCompleta = diasTotales * precioPactado;
 
-                            {/* LÓGICA CLAVE: Usamos la misma estructura de contenedor para el centro (hab-centro-libre)
-                                pero adaptamos el contenido para mostrar los detalles de la ocupación, 
-                                manteniendo la uniformidad del tamaño de la tarjeta.
-                            */}
-                            <div className="hab-centro-libre">
-                                {hab.Est_Hab === 2 ? (
-                                    <div className="hab-detalle-ocupada-v2">
-                                        <div className="detalle-row"><FaUser /> {hab.Nom_Cli || 'Cliente Desconocido'}</div>
-                                        <div className="detalle-row"><FaClock /> {info.dias} Noches</div>
-                                        <div className="detalle-row"><FaMoneyBillWave /> L. {info.consumoActual.toFixed(2)} (Sub)</div>
-                                        <small className="fecha-ingreso">Entrada: {hab.Fec_Ini_Res?.split('T')[0]}</small>
-                                    </div>
-                                ) : (
-                                    // Renderizado LISO para DISPONIBLE, LIMPIEZA y MANTENIMIENTO
-                                    <>
-                                        <div className="hab-icon">{config.icon}</div>
-                                        <div className="hab-precio">L. {hab.Precio_Hab}</div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+        return { 
+            // Muestra los días totales pactados (8 Noches)
+            dias: diasTotales, 
+            // Muestra el subtotal completo de la reserva
+            consumoTotal: subtotalReservaCompleta, 
+            fechaFinRes, 
+            isPagado: false 
+        };
+    };
+    // ----------------------------------------
 
-            {/* --- MODAL DE CAMBIO DE ESTADO (Con Botones Visuales) --- */}
-            {isModalOpen && selectedHabitacion && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h3>Cambiar Estado - Habitación {selectedHabitacion.Cod_Hab}</h3>
-                        <p>
-                            Estado Actual: <span style={{ fontWeight: 'bold' }}>
-                                {getStatusConfig(selectedHabitacion.Est_Hab).texto}
-                            </span>
-                        </p>
+    const getStatusConfig = (estado) => {
+        switch (estado) {
+            case 1: return { color: 'green', texto: 'DISPONIBLE', icon: <FaCheckCircle /> };
+            case 2: return { color: 'red', texto: 'OCUPADO', icon: <FaUser /> };
+            case 3: return { color: 'cyan', texto: 'LIMPIEZA', icon: <FaBroom /> };
+            case 4: return { color: 'orange', texto: 'MANTENIMIENTO', icon: <FaTools /> };
+            default: return { color: 'gray', texto: 'DESC.', icon: <FaBed /> };
+        }
+    };
 
-                        {/* ESTA SECCIÓN CREA EL DISEÑO DE BOTONES EN GRID CON ÍCONOS */}
-                        <div className="estado-opciones-grid">
-                            {estadosDisponibles.map((estado) => (
-                                <button
-                                    key={estado.id}
-                                    className={`estado-btn ${estado.color} ${estadoSeleccionadoId === estado.id ? 'active' : ''}`}
-                                    onClick={() => setEstadoSeleccionadoId(estado.id)}
-                                >
-                                    <div className="estado-btn-icon">{estado.icono}</div>
-                                    <div className="estado-btn-nombre">{estado.nombre}</div>
-                                </button>
-                            ))}
-                        </div>
+    return (
+        <div className="tablero-container">
+            <h2>Tablero de Habitaciones</h2>
 
-                        <div className="modal-actions">
-                            <button onClick={handleCloseModal} className="btn-cancel">Cancelar</button>
-                            <button 
-                                onClick={updateEstadoHabitacion} 
-                                className="btn-confirm"
-                                disabled={estadoSeleccionadoId === selectedHabitacion.Est_Hab}
-                            >
-                                Guardar Cambio
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+            <div className="habitaciones-grid">
+                {habitaciones.map((hab) => {
+                    const config = getStatusConfig(hab.Est_Hab);
+                    const info = calcularEstadoActual(hab);
+
+                    return (
+                        <div
+                            key={hab.Cod_Hab}
+                            className={`hab-card ${config.color}`}
+                            onClick={() => handleCardClick(hab)}
+                        >
+                            <div className="hab-header">
+                                <span>{config.texto} - {hab.Cod_Hab}</span>
+                                <span>{hab.Tipo_Hab}</span>
+                            </div>
+
+                            <div className="hab-centro-libre">
+                                {hab.Est_Hab === 2 && info ? (
+                                    <div className="hab-detalle-ocupada-v2">
+
+                                        {/* Muestra PAGADO si Pagado_NoPagado es 1 */}
+                                        {info.isPagado ? (
+                                            <>
+                                                <div className="detalle-row">
+                                                    <FaMoneyBillWave /> **PAGADA**
+                                                </div>
+                                                <small className="fecha-ingreso">
+                                                    Salida de Reserva: {info.fechaFinRes}
+                                                </small>
+                                            </>
+                                        ) : (
+                                            /* Si no está pagada → Muestra las noches y subtotal completos */
+                                            <>
+                                                <div className="detalle-row">
+                                                    <FaUser /> {hab.Nom_Cli || 'Cliente Desconocido'}
+                                                </div>
+                                                <div className="detalle-row">
+                                                    <FaClock /> {info.dias} Noches
+                                                </div>
+                                                <div className="detalle-row">
+                                                    <FaMoneyBillWave /> L. {info.consumoTotal.toFixed(2)} (Sub)
+                                                </div>
+                                                <small className="fecha-ingreso">
+                                                    Entrada: {hab.Fec_Ini_Res?.split('T')[0]}
+                                                </small>
+                                            </>
+                                        )}
+
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="hab-icon">{config.icon}</div>
+                                        <div className="hab-precio">L. {hab.Precio_Hab}</div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {isModalOpen && selectedHabitacion && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>Cambiar Estado - Habitación {selectedHabitacion.Cod_Hab}</h3>
+                        <p>
+                            Estado Actual:{' '}
+                            <strong>{getStatusConfig(selectedHabitacion.Est_Hab).texto}</strong>
+                        </p>
+
+                        <div className="estado-opciones-grid">
+                            {estadosDisponibles.map((estado) => (
+                                <button
+                                    key={estado.id}
+                                    className={`estado-btn ${estado.color} ${
+                                        estadoSeleccionadoId === estado.id ? 'active' : ''
+                                    }`}
+                                    onClick={() => setEstadoSeleccionadoId(estado.id)}
+                                >
+                                    <div className="estado-btn-icon">{estado.icono}</div>
+                                    <div className="estado-btn-nombre">{estado.nombre}</div>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="modal-actions">
+                            <button className="btn-cancel" onClick={handleCloseModal}>
+                                Cancelar
+                            </button>
+                            <button
+                                className="btn-confirm"
+                                onClick={updateEstadoHabitacion}
+                                disabled={estadoSeleccionadoId === selectedHabitacion.Est_Hab}
+                            >
+                                Guardar Cambio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default Habitaciones;
