@@ -1,66 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Agregamos useEffect
 import { useNavigate } from 'react-router-dom';
 
-// 1. IMPORTACIÓN CORREGIDA: Apunta directamente al archivo Huespedes.jsx
+// Importaciones de componentes
 import HuespedesForm from './Huespedes.jsx'; 
-
 import EmployeesForm from './Employees/Employees'; 
-import logoHotel from '../assets/LogoHotel.jpg';
-import './MenuPage.css'; 
 import EmpresaForm from './Empresa';
 import Habitaciones from './Habitaciones';
 import Reservas from './Reservas';
 import Facturacion from './Facturacion';
 
+import logoHotel from '../assets/LogoHotel.jpg';
+import './MenuPage.css'; 
 
-// Lista de los ítems del sidebar
-const sidebarItems = [
+// Lista COMPLETA de los ítems del sidebar
+const allSidebarItems = [
     { id: 'reservas', name: 'Reservas', icon: '🏠' },
     { id: 'huespedes', name: 'Huéspedes', icon: '👥' },
     { id: 'habitaciones', name: 'Habitaciones', icon: '🛏️' },
-    { id: 'empleados', name: 'Empleados', icon: '🧑‍💼' },
+    { id: 'empleados', name: 'Empleados', icon: '🧑‍💼' },     // Restringido
     { id: 'facturacion', name: 'Facturación', icon: '🧾' },
-    { id: 'configuracion', name: 'Configuración', icon: '⚙️' },
+    { id: 'configuracion', name: 'Configuración', icon: '⚙️' }, // Restringido (Usuarios)
     { id: 'perfil', name: 'Perfil', icon: '👤' },
     { id: 'empresa', name: 'Empresa', icon: '🏢' },
 ];
 
 function MenuPage() {
-    // Estado inicial cambiado a 'dashboard'
     const [currentView, setCurrentView] = useState('dashboard'); 
+    const [user, setUser] = useState(null); // Estado para guardar datos del usuario logueado
+    const [filteredItems, setFilteredItems] = useState([]); // Items del menú filtrados por rol
+    
     const navigate = useNavigate();
+
+    // 1. EFECTO DE CARGA: Verificar usuario y definir roles
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            
+            const role = parsedUser.tipo_usu; // 1: Admin, 2: Gerente, 3: Recep
+
+            // Lógica de filtrado de menú según roles
+            const items = allSidebarItems.filter(item => {
+                // ADMINISTRADOR (1): Ve todo
+                if (role === 1) return true;
+
+                // GERENTE (2): Ve todo MENOS Empleados y Configuración (Usuarios)
+                if (role === 2) {
+                    return item.id !== 'empleados' && item.id !== 'configuracion';
+                }
+
+                // RECEPCIONISTA (3): Solo Reservas, Huéspedes, Habitaciones, Facturación, Empresa y Perfil
+                if (role === 3) {
+                    return ['reservas', 'huespedes', 'habitaciones', 'facturacion', 'empresa', 'perfil'].includes(item.id);
+                }
+
+                return false; // Por defecto no ve nada si no tiene rol
+            });
+
+            setFilteredItems(items);
+
+        } else {
+            // Si no hay usuario logueado, redirigir al login
+            navigate('/');
+        }
+    }, [navigate]);
+
 
     // Renderiza el componente de la vista seleccionada
     const renderContentView = () => {
         switch (currentView) {
             case 'reservas':
                 return <Reservas />;
-                
             case 'huespedes': 
-                // 2. CASO 'HUESPEDES' AÑADIDO: Muestra el componente Huéspedes
                 return <HuespedesForm />; 
-
             case 'empleados':
                 return <EmployeesForm />; 
-                
             case 'empresa':
                 return <EmpresaForm/>;   
-
-                
             case 'habitaciones':
                 return <Habitaciones/>;
-
             case 'facturacion':
                 return <Facturacion/>;
-                
             case 'configuracion':
-                return <div>Vista de Configuración</div>;
-                
+                return <div><h3>Gestión de Usuarios (Configuración)</h3><p>Solo visible para Administradores.</p></div>;
             case 'perfil':
-                return <div>Vista de Perfil</div>;
-                
+                return <div><h3>Perfil de Usuario</h3><p>Nombre: {user?.nom_usu}</p><p>Rol ID: {user?.tipo_usu}</p></div>;
             default:
-                return <div>Bienvenido al Dashboard.</div>;
+                return (
+                    <div style={{textAlign: 'center', marginTop: '50px'}}>
+                        <h2>Bienvenido al Sistema Hotelero Clementina</h2>
+                        <p>Seleccione una opción del menú para comenzar.</p>
+                    </div>
+                );
         }
     };
 
@@ -81,7 +114,8 @@ function MenuPage() {
                 </div>
                 <nav className="sidebar-nav">
                     <ul>
-                        {sidebarItems.map((item) => (
+                        {/* Usamos filteredItems en lugar de sidebarItems estático */}
+                        {filteredItems.map((item) => (
                             <li 
                                 key={item.id}
                                 className={currentView === item.id ? 'active' : ''}
@@ -103,7 +137,9 @@ function MenuPage() {
             <div className="main-content">
                 <header className="main-header">
                     <div className="user-info">
-                        <span>Usuario Conectado</span> <span className="sidebar-icon">👤</span>
+                        {/* Mostramos el nombre real del usuario */}
+                        <span>{user ? user.nom_usu : 'Usuario Conectado'}</span> 
+                        <span className="sidebar-icon">👤</span>
                     </div>
                 </header>
                 <div className="content-area">

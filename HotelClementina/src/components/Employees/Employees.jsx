@@ -43,7 +43,7 @@ function EmployeesForm() {
         { id: 4, nombre: 'Gerente' },         
     ];
     const tiposDocumento = ['DNI', 'Pasaporte', 'Carnet de Residencia'];
-    const roles = ['Administrador', 'Cajero', 'Empleado General'];
+    const roles = ['Administrador', 'Gerente', 'Recepcionista', 'Limpieza'];
     
     // ==================== FUNCIONES DE UTILIDAD ====================
 
@@ -365,38 +365,6 @@ function EmployeesForm() {
                     </div>
                 </fieldset>
                 
-                {/* Acceso al Sistema */}
-                <fieldset className="form-section access-system">
-                    <legend>Acceso al Sistema</legend>
-                    <div className="form-grid access-grid">
-                        <div className="form-group">
-                            <label htmlFor="Cor_Emp_Access">Correo Electrónico de Usuario</label>
-                            <input type="email" id="Cor_Emp_Access" name="Cor_Emp_Access" value={formData.Cor_Emp} readOnly className="read-only-input" />
-                        </div>
-                        
-                        <div className="form-group">
-                            <label htmlFor="Rol_Sistema">Rol del Sistema</label>
-                            <select id="Rol_Sistema" name="Rol_Sistema" value={formData.Rol_Sistema} onChange={handleChange} required>
-                                {roles.map(rol => (<option key={rol} value={rol}>{rol}</option>))}
-                            </select>
-                        </div>
-
-                        <div className="form-group full-row toggle-group">
-                            <label htmlFor="accessToggle">Activar Acceso</label>
-                            <label className="switch">
-                                <input 
-                                    type="checkbox" 
-                                    id="accessToggle" 
-                                    name="accessToggle" 
-                                    checked={formData.HabDesEmp === 1} 
-                                    onChange={(e) => setFormData({...formData, HabDesEmp: e.target.checked ? 1 : 0})} 
-                                />
-                                <span className="slider round"></span>
-                            </label>
-                        </div>
-
-                    </div>
-                </fieldset>
 
                 {/* Botones de Acción */}
                 <div className="form-actions">

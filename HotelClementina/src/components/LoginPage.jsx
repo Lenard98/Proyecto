@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // 1. IMPORTAR EL HOOK DE NAVEGACIÓN
+import { useNavigate } from 'react-router-dom'; 
 
 // Importa tu nuevo archivo CSS
 import './LoginPage.css'; 
@@ -13,7 +13,9 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // 2. INICIALIZAR EL HOOK
+  
+  // Inicializar el hook de navegación
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault(); 
@@ -21,6 +23,7 @@ function LoginPage() {
     setLoading(true);
 
     try {
+      // Petición al backend
       const response = await axios.post('http://localhost:3002/api/login', {
         username: username,
         password: password
@@ -29,12 +32,12 @@ function LoginPage() {
       setLoading(false);
       console.log('Login exitoso:', response.data);
       
-      // Opcional: Guardar datos del usuario
+      // 1. IMPORTANTE: Guardar datos del usuario (incluido el Rol/Tipo_Usu)
+      // Esto es lo que leerá el MenuPage para saber qué mostrar
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      // 3. CAMBIAR EL ALERT POR LA NAVEGACIÓN
-      // alert(`¡Bienvenido, ${response.data.user.nom_usu}!`); // <--- Borramos esta línea
-      navigate('/menu'); // <--- Y la cambiamos por esta
+      // 2. Navegar al menú principal en lugar de mostrar alerta
+      navigate('/menu'); 
 
     } catch (err) {
       setLoading(false);
@@ -47,11 +50,11 @@ function LoginPage() {
   };
 
   return (
-    // Ahora usamos 'className' en lugar de 'style'
+    // Estructura del formulario de login
     <div className="login-page">
       <div className="login-container">
         
-        {/* 3. Añadimos la imagen del logo aquí */}
+        {/* Logo del Hotel */}
         <img src={logoHotel} alt="Logo Hotel Clementina" className="login-logo" />
 
         <h2>Inicio de Sesión</h2>
@@ -77,6 +80,7 @@ function LoginPage() {
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
+        
         {error && <p className="login-error">{error}</p>}
       </div>
     </div>
