@@ -1,126 +1,379 @@
-/* components/Empresa/Empresa.css - Estilos del Formulario */
+/* components/Empresa/Empresa.css - Estilos del Formulario y Historial */
 
 .empresa-form-container {
-  padding: 20px;
-  background-color: #f8f9fa; 
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  max-width: 800px; 
-  margin: 20px auto; 
+    padding: 20px;
+    background-color: #f8f9fa; 
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    max-width: 800px; 
+    margin: 20px auto; 
 }
 
 .form-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
 }
 
 .form-header h2 {
-  font-size: 1.8rem;
-  color: #343a40;
-  margin: 0;
+    font-size: 1.8rem;
+    color: #343a40;
+    margin: 0;
 }
 
-/* ... (Estilos de botones - sin cambios) ... */
+/* Estilos de botones */
 .btn-primary {
-  background-color: #5E637A;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
+    background-color: #5E637A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
 }
 .btn-primary:hover {
-  background-color: #768BA6;
+    background-color: #768BA6;
 }
 .btn-secondary {
-  background-color: red;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
-  margin-right: 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    margin-right: 10px;
 }
 .btn-secondary:hover {
-  background-color: #9A0000;
+    background-color: #9A0000;
 }
 
 
 .empresa-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
 }
 
 .form-section {
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 20px;
-  margin: 0;
-  width: 100%; 
-  background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 0;
+    width: 100%; 
+    background-color: white;
+}
+
+/* Estilo para deshabilitar el formulario de registro si se está editando una fila */
+.form-section[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
 }
 
 legend {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #343a40;
-  padding: 0 10px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #343a40;
+    padding: 0 10px;
 }
 
-/* CAMBIO AQUÍ: 2 columnas para RTN y Nombre */
 .form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Dos columnas */
-  gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas */
+    gap: 20px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group label {
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #495057;
-  font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #495057;
+    font-size: 0.9rem;
 }
 
 .form-group input {
-  padding: 10px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-group input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
 }
 
 .form-actions {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 20px;
-  border-top: 1px solid #dee2e6;
-  width: 100%; 
-  margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    width: 100%; 
+    margin-top: 20px;
 }
 
 /* Media query para hacerlos 1 columna en pantallas pequeñas */
 @media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr; 
-  }
+    .form-grid {
+        grid-template-columns: 1fr; 
+    }
+}
+
+
+/* --- INICIO: ESTILOS PARA EL HISTORIAL DE EMPRESAS --- */
+
+/* Contenedor principal de la página (para separar el form del historial) */
+.empresa-page-wrapper {
+    display: flex;
+    flex-direction: column; 
+    gap: 0px; 
+    padding: 0px;
+    max-width: 800px; 
+    margin: 0 auto; 
+}
+
+/* Contenedor del historial */
+.empresa-history-section {
+    padding: 20px;
+    background-color: #ffffff; 
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-x: auto; 
+}
+
+.empresa-history-section .form-header h2 {
+    font-size: 1.5rem; 
+}
+
+/* Estilos de la tabla */
+.history-table-container {
+    width: 100%;
+    overflow-x: auto; 
+}
+
+.history-table-container table {
+    width: 100%;
+    min-width: 700px; /* Ancho mínimo para la tabla */
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.history-table-container th, 
+.history-table-container td {
+    border: 1px solid #dee2e6; 
+    padding: 10px 8px;
+    text-align: left;
+    white-space: nowrap; 
+    font-size: 0.85rem;
+}
+
+.history-table-container th {
+    background-color: #5E637A; 
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.history-table-container tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.history-table-container tr:hover:not(.editing-row) {
+    background-color: #f1f1f1;
+}
+
+/* Estilo para la fila que está siendo editada */
+.editing-row {
+    background-color: #fff3cd !important; 
+    border: 2px solid #ffc107;
+}
+
+/* Estilo para los inputs dentro de la tabla */
+.table-input {
+    padding: 3px 5px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.8rem;
+    background-color: white; 
+}
+
+/* Estilos de botones de acción */
+.action-cell {
+    display: flex;
+    gap: 5px;
+    min-width: 250px; /* Asegura espacio para 3 botones */
+}
+
+.action-cell button {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color 0.2s;
+}
+
+.action-cell button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-edit {
+    background-color: #2a6fdb; /* Azul */
+    color: white;
+}
+
+.btn-delete {
+    background-color: #dc3545; /* Rojo */
+    color: white;
+}
+
+.btn-save {
+    background-color: #28a745; /* Verde */
+    color: white;
+}
+
+.btn-cancel-edit {
+    background-color: #ffc107; /* Amarillo/Naranja */
+    color: #343a40;
+}
+
+.btn-view-clients {
+    background-color: #ff7a27; /* Azul vibrante para ver clientes */
+    color: white;
+}
+
+/* Estilos para mensajes */
+.message-success {
+    padding: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.message-error {
+    padding: 10px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.message-info {
+    padding: 10px;
+    background-color: #f0f8ff; 
+    color: #004085;
+    border: 1px solid #b8daff;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+
+/* --- ESTILOS DEL MODAL DE CLIENTES --- */
+
+.clientes-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; 
+}
+
+.clientes-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 750px;
+    max-height: 90vh; 
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-header-container h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #343a40;
+}
+
+.btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #495057;
+    line-height: 1;
+}
+
+.btn-close-modal:hover {
+    color: #dc3545;
+}
+
+/* Estilos para la tabla de clientes dentro del modal */
+.clientes-list-container {
+    overflow-y: auto; 
+    flex-grow: 1; 
+    margin-bottom: 20px;
+}
+
+.clientes-list-container table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+}
+
+.clientes-list-container th, 
+.clientes-list-container td {
+    padding: 10px;
+    border: 1px solid #e9ecef;
+    font-size: 0.9rem;
+}
+
+.clientes-list-container th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.modal-footer-container {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 15px;
+    border-top: 1px solid #dee2e6;
 }

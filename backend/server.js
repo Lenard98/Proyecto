@@ -69,8 +69,12 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// 6. Endpoint para Registrar Empleados 
+// 6. ENDPOINTS DE EMPLEADOS
 // ------------------------------------------------------------------
+
+/**
+ * Endpoint para Registrar Empleados (POST)
+ */
 app.post('/api/empleados', async (req, res) => {
     const {
         Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp,
@@ -115,15 +119,119 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     }
 });
 
-// ------------------------------------------------------------------
-// 7. Endpoint para Empresa
-// ------------------------------------------------------------------
 /**
- * Endpoint NUEVO: Obtiene la lista de Códigos y Nombres de Empresas.
+ * Endpoint: Obtener Historial de Empleados (GET)
+ */
+app.get('/api/empleados-historial', async (req, res) => {
+    try {
+        const sql = `SELECT * FROM empleados ORDER BY Cod_Emp DESC`;
+        const [rows] = await pool.query(sql);
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Error al obtener el historial de empleados:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor al obtener historial de empleados.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
+/**
+ * Endpoint: Actualizar Empleado (PUT)
+ */
+app.put('/api/empleados/:codEmp', async (req, res) => {
+    const { codEmp } = req.params;
+    const {
+        Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp,
+        Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp,
+        Seguro, HabDesEmp
+    } = req.body;
+
+    if (!Nom_Emp || !Ape_Emp || !Cor_Emp || Sueldo_Emp === undefined || Cod_Cargo === undefined) {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre, Apellido, Correo, Sueldo y Cargo.' });
+    }
+
+    const sql = `
+        UPDATE empleados SET
+            Nom_Emp = ?, Ape_Emp = ?, Fch_Nacim = ?, Sex_Emp = ?, 
+            Tel_Emp = ?, Fec_Ini_Emp = ?, Cor_Emp = ?, Dir_Emp = ?, 
+            Cod_Cargo = ?, Sueldo_Emp = ?, Seguro = ?, HabDesEmp = ?
+        WHERE Cod_Emp = ?
+    `;
+
+    const values = [
+        Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp,
+        Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp,
+        Seguro, HabDesEmp,
+        codEmp // WHERE condition
+    ];
+
+    try {
+        const [result] = await pool.query(sql, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Empleado no encontrado.' });
+        }
+
+        res.json({ success: true, message: 'Empleado actualizado con éxito' });
+
+    } catch (error) {
+        console.error('Error al actualizar empleado en la base de datos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor al actualizar empleado.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
+/**
+ * Endpoint: Eliminar Empleado (DELETE)
+ */
+app.delete('/api/empleados/:codEmp', async (req, res) => {
+    const { codEmp } = req.params;
+
+    try {
+        const [result] = await pool.query('DELETE FROM empleados WHERE Cod_Emp = ?', [codEmp]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Empleado no encontrado.' });
+        }
+
+        res.json({ success: true, message: 'Empleado eliminado con éxito' });
+
+    } catch (error) {
+        console.error('Error al eliminar empleado de la base de datos:', error);
+        
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+            return res.status(409).json({
+                success: false,
+                message: 'No se puede eliminar el empleado porque tiene referencias activas en el sistema (ej: usuario, caja).',
+                sqlError: error.sqlMessage
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor al eliminar empleado.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
+// ------------------------------------------------------------------
+// 7. ENDPOINTS DE EMPRESAS
+// ------------------------------------------------------------------
+
+/**
+ * Endpoint: Obtiene la lista de Códigos y Nombres de Empresas (usado para Historial y Selectores).
  */
 app.get('/api/empresas-lista', async (req, res) => {
     try {
-        // CORREGIDO: Consulta en una sola línea.
         const sql = `SELECT Cod_Emp, Nom_Emp FROM Empresa ORDER BY Nom_Emp ASC`;
 
         const [rows] = await pool.query(sql);
@@ -138,7 +246,6 @@ app.get('/api/empresas-lista', async (req, res) => {
 
 
 app.get('/api/empresa', async (req, res) => {
-    // Consulta en una sola línea.
     const sql = "SELECT * FROM Empresa WHERE id_empresa = 1";
 
     try {
@@ -195,16 +302,150 @@ VALUES (?, ?)
     }
 });
 
+
+/**
+ * Endpoint: Actualizar Empresa (PUT)
+ */
+app.put('/api/empresa/:codEmp', async (req, res) => {
+    const { codEmp } = req.params;
+    const { Cod_Emp, Nom_Emp } = req.body; // Se reciben ambos por si se editó el Cod_Emp
+
+    if (!Nom_Emp || !Cod_Emp) {
+        return res.status(400).json({ success: false, message: 'El RTN y Nombre de la Empresa son requeridos para actualizar.' });
+    }
+    
+    // Si el Cod_Emp en el body es diferente al Cod_Emp en la URL, se asume que se está cambiando el RTN.
+    // La consulta debe usar el Cod_Emp de la URL para el WHERE (el valor original) y el Cod_Emp del body para el SET (el nuevo valor).
+
+    const sql = `
+        UPDATE Empresa SET
+            Cod_Emp = ?, Nom_Emp = ?
+        WHERE Cod_Emp = ?
+    `;
+
+    try {
+        // Se usan los valores: [Nuevo Cod_Emp, Nuevo Nom_Emp, Cod_Emp Original (de la URL)]
+        const [result] = await pool.query(sql, [Cod_Emp, Nom_Emp, codEmp]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Empresa no encontrada.' });
+        }
+
+        res.json({ success: true, message: 'Empresa actualizada con éxito' });
+
+    } catch (error) {
+        console.error('Error al actualizar empresa en la base de datos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor al actualizar empresa.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+/**
+ * Endpoint: Eliminar Empresa (DELETE)
+ */
+app.delete('/api/empresa/:codEmp', async (req, res) => {
+    const { codEmp } = req.params;
+
+    try {
+        const [result] = await pool.query('DELETE FROM Empresa WHERE Cod_Emp = ?', [codEmp]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Empresa no encontrada.' });
+        }
+
+        res.json({ success: true, message: 'Empresa eliminada con éxito' });
+
+    } catch (error) {
+        console.error('Error al eliminar empresa de la base de datos:', error);
+        
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+            return res.status(409).json({
+                success: false,
+                message: 'No se puede eliminar la empresa porque está asociada a uno o más huéspedes.',
+                sqlError: error.sqlMessage
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor al eliminar empresa.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
+/**
+ * Endpoint: Obtener la lista de Clientes por Cod_Emp
+ */
+app.get('/api/empresa/clientes/:codEmp', async (req, res) => {
+    const { codEmp } = req.params;
+
+    if (!codEmp) {
+        return res.status(400).json({ success: false, message: 'El código de empresa (RTN) es requerido.' });
+    }
+
+    try {
+        const sql = `
+            SELECT 
+                Cod_Cli, 
+                Nom_Cli, 
+                Tel1_Huesped, 
+                Email_Huesped 
+            FROM clientes 
+            WHERE Empresa_Huesped = (SELECT Nom_Emp FROM Empresa WHERE Cod_Emp = ?)
+            ORDER BY Nom_Cli ASC
+        `;
+
+        const [rows] = await pool.query(sql, [codEmp]);
+
+        res.json({ success: true, data: rows });
+
+    } catch (error) {
+        console.error('Error al obtener clientes por empresa:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor al obtener clientes asociados.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
 // ------------------------------------------------------------------
 // 8. ENDPOINTS DE CLIENTES / HUÉSPEDES
 // ------------------------------------------------------------------
+
+/**
+ * Endpoint: Obtener TODOS los Huéspedes (Historial)
+ */
+app.get('/api/huespedes-historial', async (req, res) => {
+    try {
+        const sql = `SELECT * FROM clientes ORDER BY Cod_Cli DESC`; 
+
+        const [rows] = await pool.query(sql);
+
+        res.json({ success: true, data: rows });
+
+    } catch (error) {
+        console.error('Error al obtener el historial de huéspedes:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor al obtener el historial de huéspedes.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
 
 /**
  * Endpoint para obtener la lista básica de Clientes (para Select)
  */
 app.get('/api/clientes-lista', async (req, res) => {
     try {
-        // CORREGIDO: Consulta en una sola línea.
         const sql = `SELECT Cod_Cli, Nom_Cli FROM clientes ORDER BY Nom_Cli ASC`;
 
         const [rows] = await pool.query(sql);
@@ -225,7 +466,6 @@ app.get('/api/cliente/:codCli', async (req, res) => {
     const { codCli } = req.params;
 
     try {
-        // CORREGIDO: Consulta en una sola línea.
         const sql = `SELECT Cod_Cli, Nom_Cli, Tel1_Huesped, Nacionalidad, Procedencia FROM clientes WHERE Cod_Cli = ?`;
 
         const [rows] = await pool.query(sql, [codCli]);
@@ -295,6 +535,91 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     }
 });
 
+/**
+ * Endpoint: Actualizar Huésped (PUT)
+ */
+app.put('/api/huespedes/:codCli', async (req, res) => {
+    const { codCli } = req.params;
+    const {
+        Tipo_Cli, Nom_Cli, Tel1_Huesped, Tel2_Huesped,
+        Tel3_Huesped, Email_Huesped, Empresa_Huesped, Nacionalidad,
+        Procedencia, Observaciones
+    } = req.body;
+
+    if (!Nom_Cli || !Tel1_Huesped) {
+        return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre y Teléfono Principal.' });
+    }
+
+    const sql = `
+        UPDATE clientes SET
+            Tipo_Cli = ?, Nom_Cli = ?, Tel1_Huesped = ?, Tel2_Huesped = ?,
+            Tel3_Huesped = ?, Email_Huesped = ?, Empresa_Huesped = ?,
+            Nacionalidad = ?, Procedencia = ?, Observaciones = ?
+        WHERE Cod_Cli = ?
+    `;
+
+    const values = [
+        Tipo_Cli, Nom_Cli, Tel1_Huesped, Tel2_Huesped,
+        Tel3_Huesped, Email_Huesped, Empresa_Huesped, Nacionalidad,
+        Procedencia, Observaciones,
+        codCli 
+    ];
+
+    try {
+        const [result] = await pool.query(sql, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Huésped no encontrado.' });
+        }
+
+        res.json({ success: true, message: 'Huésped actualizado con éxito' });
+
+    } catch (error) {
+        console.error('Error al actualizar huésped en la base de datos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor al actualizar huésped.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
+/**
+ * Endpoint: Eliminar Huésped
+ */
+app.delete('/api/huespedes/:codCli', async (req, res) => {
+    const { codCli } = req.params;
+
+    try {
+        const [result] = await pool.query('DELETE FROM clientes WHERE Cod_Cli = ?', [codCli]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Huésped no encontrado.' });
+        }
+
+        res.json({ success: true, message: 'Huésped eliminado con éxito' });
+
+    } catch (error) {
+        console.error('Error al eliminar huésped de la base de datos:', error);
+        
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+            return res.status(409).json({
+                success: false,
+                message: 'No se puede eliminar el huésped porque tiene reservas u otras referencias en la base de datos.',
+                sqlError: error.sqlMessage
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor al eliminar huésped.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
 // ==================================================================
 // MÓDULO DE GESTIÓN HOTELERA (Habitaciones, Reservas, Caja)
 // ==================================================================
@@ -302,7 +627,6 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 // 1. ENDPOINT MAESTRO: Obtener Tablero de Habitaciones
 app.get('/api/habitaciones', async (req, res) => {
     try {
-        // CONSULTA CORREGIDA para traer la ÚLTIMA reserva si la habitación está en Est_Hab = 2.
         const finalSql = `
 SELECT 
     h.Cod_Hab, 
@@ -347,7 +671,7 @@ app.post('/api/reservar', async (req, res) => {
 
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction(); // Iniciar Transacción Segura
+        await connection.beginTransaction(); 
 
         // 1. Validar que la habitación siga libre (Evitar doble venta)
         const [check] = await connection.query('SELECT Est_Hab FROM Habitaciones WHERE Cod_Hab = ?', [Cod_Hab]);
@@ -366,7 +690,6 @@ app.post('/api/reservar', async (req, res) => {
         const Precio_Pactado = tipo[0].Precio_Hab;
 
         // 3. Insertar la Reserva 
-        // SQL CORREGIDO para resolver el ER_PARSE_ERROR.
         const sqlInsert = `
 INSERT INTO Reserva (
     Cod_Res, Fec_Ini_Res, Fec_Fin_Res, Cod_Hab, Cod_Cli, 
@@ -389,11 +712,11 @@ VALUES (
         // 4. Cambiar Semáforo a ROJO (Ocupado = 2) en tabla Habitaciones
         await connection.query('UPDATE Habitaciones SET Est_Hab = 2 WHERE Cod_Hab = ?', [Cod_Hab]);
 
-        await connection.commit(); // Guardar cambios definitivamente
+        await connection.commit(); 
         res.json({ success: true, message: 'Reserva creada exitosamente' });
 
     } catch (error) {
-        await connection.rollback(); // Cancelar todo si algo falla
+        await connection.rollback(); 
         console.error(error);
         res.status(500).json({ success: false, message: error.message || 'Error al reservar' });
     } finally {
@@ -403,17 +726,14 @@ VALUES (
 
 // 3. ENDPOINT: FACTURAR Y SALIDA (Check-Out)
 app.post('/api/facturar', async (req, res) => {
-    // Se utiliza Fecha_Salida_Real que viene del frontend (la fecha de hoy)
-    // --- MODIFICACIÓN: AÑADIDO 'Extras' AL DESTRUCTURING ---
     const { Cod_Res, Cod_Hab, Total_Pagar, Cod_Cli, TipoPago, EstadiaDias, Cod_Usu, Fecha_Salida_Real, Extras } = req.body; 
 
-    const Cod_Fact = Math.floor(Date.now() / 1000); // Generar ID Factura único
+    const Cod_Fact = Math.floor(Date.now() / 1000); 
 
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
-        // Validación para asegurar que el Cod_Usu existe antes de insertarlo
         if (!Cod_Usu) {
             throw new Error("El Código de Usuario que realiza la facturación es requerido.");
         }
@@ -431,8 +751,6 @@ VALUES (?, ?, ?, 0, ?)
 `, [Cod_Fact, Cod_Hab, EstadiaDias || 1, Total_Pagar]);
 
         // 3. Cerrar la Reserva (Tabla: Reserva)
-        // Cod_Est = 1 (Finalizada/Cerrada) y Pagado_NoPagado = 1 (Pagado)
-        // Esto permite que la card se siga mostrando con el mensaje de "Pagado".
         await connection.query(`
 UPDATE Reserva 
 SET Cod_Est = 1, 
@@ -442,12 +760,10 @@ SET Cod_Est = 1,
 WHERE Cod_Res = ?
 `, [TipoPago, Fecha_Salida_Real, Cod_Res]);
 
-        // 4. --- MODIFICACIÓN: GUARDAR CARGOS EXTRA (TABLA recargos) ---
+        // 4. GUARDAR CARGOS EXTRA (TABLA recargos)
         if (Extras && Extras.length > 0) {
-            // A. Obtenemos el ÚLTIMO ID que existe en la tabla recargos
-            // Nota: Si la tabla está vacía, maxId será null, así que usamos || 0
             const [maxRow] = await connection.query('SELECT MAX(Cod_Cargo) as maxId FROM recargos');
-            let nextId = (maxRow[0].maxId || 0) + 1; // El siguiente ID disponible
+            let nextId = (maxRow[0].maxId || 0) + 1; 
 
             for (const item of Extras) {
                 const sqlCargo = `INSERT INTO recargos (Cod_Cargo, Desc_Recargo, Pre_Recargo, Cantidad, Cod_Res) VALUES (?, ?, ?, ?, ?)`;
@@ -460,7 +776,6 @@ WHERE Cod_Res = ?
                     Cod_Res
                 ]);
                 
-                // Incrementamos el ID para el siguiente cargo en el ciclo (AUTO-INCREMENTAL MANUAL)
                 nextId++; 
             }
         }
@@ -472,7 +787,6 @@ WHERE Cod_Res = ?
     } catch (error) {
         await connection.rollback();
         console.error('Error durante la facturación:', error);
-        // Si falla la Foreign Key (1452), se da un mensaje específico.
         if (error.errno === 1452) {
             return res.status(500).json({ success: false, message: `Error: El Código de Usuario '${Cod_Usu}' no existe en la tabla 'usuarios'.` });
         }
@@ -494,21 +808,16 @@ app.post('/api/habitacion/liberar', async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------------
 // 5. NUEVO ENDPOINT: CAMBIAR ESTADO MANUAL DE HABITACIÓN
-// (Usado por el Modal en Habitaciones.jsx)
-// ------------------------------------------------------------------
 app.put('/api/habitaciones/cambiar-estado/:codHab', async (req, res) => {
     const { codHab } = req.params;
-    const { nuevoEstado } = req.body; // Viene del frontend como 1, 2, 3 o 4
+    const { nuevoEstado } = req.body; 
 
-    // Validar que el nuevo estado sea uno de los permitidos (1, 2, 3, 4)
     if (![1, 2, 3, 4].includes(nuevoEstado)) {
         return res.status(400).json({ success: false, message: 'Estado no válido. Debe ser 1, 2, 3 o 4.' });
     }
 
     try {
-        // Query para actualizar la columna Est_Hab en la tabla Habitaciones
         const sqlUpdate = 'UPDATE Habitaciones SET Est_Hab = ? WHERE Cod_Hab = ?';
 
         const [result] = await pool.query(sqlUpdate, [nuevoEstado, codHab]);
@@ -525,47 +834,7 @@ app.put('/api/habitaciones/cambiar-estado/:codHab', async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------------
-// 6. NUEVO ENDPOINT (AGREGADO): ELIMINAR RESERVA Y LIBERAR HABITACIÓN
-// ------------------------------------------------------------------
-app.delete('/api/reservas/:codRes', async (req, res) => {
-    const { codRes } = req.params;
-
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-
-        // 1. Obtener qué habitación estaba ocupada por esta reserva
-        const [reserva] = await connection.query('SELECT Cod_Hab FROM Reserva WHERE Cod_Res = ?', [codRes]);
-        
-        if (reserva.length === 0) {
-            throw new Error("Reserva no encontrada.");
-        }
-        
-        const codHab = reserva[0].Cod_Hab;
-
-        // 2. Eliminar la reserva de la base de datos
-        await connection.query('DELETE FROM Reserva WHERE Cod_Res = ?', [codRes]);
-
-        // 3. Liberar la habitación (Ponerla en Estado 1 = Disponible)
-        // Esto es importante para que no quede ocupada por una reserva fantasma.
-        await connection.query('UPDATE Habitaciones SET Est_Hab = 1 WHERE Cod_Hab = ?', [codHab]);
-
-        await connection.commit();
-        res.json({ success: true, message: 'Reserva eliminada y habitación liberada.' });
-
-    } catch (error) {
-        await connection.rollback();
-        console.error('Error al eliminar reserva:', error);
-        res.status(500).json({ success: false, message: error.message || 'Error al eliminar reserva' });
-    } finally {
-        connection.release();
-    }
-});
-
-// ------------------------------------------------------------------
 // 9. Iniciar el servidor
-// ------------------------------------------------------------------
 app.listen(port, () => {
     console.log(`🚀 Servidor backend corriendo en http://localhost:${port}`);
 });
