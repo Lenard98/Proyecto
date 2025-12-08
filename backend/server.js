@@ -73,7 +73,33 @@ app.post('/api/login', async (req, res) => {
 // ------------------------------------------------------------------
 
 /**
- * Endpoint para Registrar Empleados (POST)
+ * Endpoint para obtener el Historial Completo de Empleados (GET /api/empleados) 
+ */
+app.get('/api/empleados', async (req, res) => {
+    try {
+        const sql = `
+            SELECT 
+                e.*, 
+                c.Tipo_Cargo
+            FROM empleados e
+            INNER JOIN empleados_cargo c ON e.Cod_Cargo = c.Cod_Cargo
+            ORDER BY e.Cod_Emp DESC
+        `;
+        const [rows] = await pool.query(sql);
+        res.json(rows); 
+    } catch (error) {
+        console.error('Error al obtener el historial de empleados:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor al obtener historial de empleados.',
+            sqlError: error.sqlMessage || error.message
+        });
+    }
+});
+
+
+/**
+ * Endpoint para Registrar Empleados (POST) 
  */
 app.post('/api/empleados', async (req, res) => {
     const {
@@ -119,27 +145,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     }
 });
 
-/**
- * Endpoint: Obtener Historial de Empleados (GET)
- */
-app.get('/api/empleados-historial', async (req, res) => {
-    try {
-        const sql = `SELECT * FROM empleados ORDER BY Cod_Emp DESC`;
-        const [rows] = await pool.query(sql);
-        res.json({ success: true, data: rows });
-    } catch (error) {
-        console.error('Error al obtener el historial de empleados:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error interno del servidor al obtener historial de empleados.',
-            sqlError: error.sqlMessage || error.message
-        });
-    }
-});
-
 
 /**
- * Endpoint: Actualizar Empleado (PUT)
+ * Endpoint: Actualizar Empleado (PUT) - CORREGIDO para manejar campos NOT NULL.
  */
 app.put('/api/empleados/:codEmp', async (req, res) => {
     const { codEmp } = req.params;
@@ -149,9 +157,34 @@ app.put('/api/empleados/:codEmp', async (req, res) => {
         Seguro, HabDesEmp
     } = req.body;
 
+    // 1. VALIDACIÓN ESTRICTA (CRÍTICA)
     if (!Nom_Emp || !Ape_Emp || !Cor_Emp || Sueldo_Emp === undefined || Cod_Cargo === undefined) {
         return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre, Apellido, Correo, Sueldo y Cargo.' });
     }
+
+    // 2. NORMALIZACIÓN CRÍTICA: Convertir NULL/undefined a valores seguros.
+    // Esto es CLAVE para la edición en línea donde campos NOT NULL pueden no ser visibles.
+    
+    // Normalización de cadenas (VARCHAR/TEXT NOT NULL) -> Usa cadena vacía si es nulo.
+    const normalizedDirEmp = Dir_Emp || ''; 
+    const normalizedTelEmp = Tel_Emp || '';
+    const normalizedCorEmp = Cor_Emp || ''; 
+    
+    // Normalización de fechas (DATE NOT NULL) -> Usa una fecha por defecto si es nulo.
+    const normalizedFchNacim = Fch_Nacim || '1900-01-01'; 
+    const normalizedFecIniEmp = Fec_Ini_Emp || new Date().toISOString().substring(0, 10);
+    
+    // Normalización de booleanos/enteros (TINYINT NOT NULL) -> Usa 1 (Activo/Masculino) si es nulo.
+    const normalizedSexEmp = Sex_Emp === null || Sex_Emp === undefined ? 1 : Sex_Emp; 
+    const normalizedHabDesEmp = HabDesEmp === null || HabDesEmp === undefined ? 1 : HabDesEmp;
+    
+    // Normalización de números (DECIMAL/FLOAT)
+    const normalizedSueldoEmp = parseFloat(Sueldo_Emp || 0);
+    const normalizedSeguro = parseFloat(Seguro || 0);
+    
+    // Normalización de Cod_Cargo (Entero NOT NULL)
+    const normalizedCodCargo = parseInt(Cod_Cargo);
+
 
     const sql = `
         UPDATE empleados SET
@@ -162,9 +195,9 @@ app.put('/api/empleados/:codEmp', async (req, res) => {
     `;
 
     const values = [
-        Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp,
-        Fec_Ini_Emp, Cor_Emp, Dir_Emp, Cod_Cargo, Sueldo_Emp,
-        Seguro, HabDesEmp,
+        Nom_Emp, Ape_Emp, normalizedFchNacim, normalizedSexEmp, normalizedTelEmp,
+        normalizedFecIniEmp, normalizedCorEmp, normalizedDirEmp, normalizedCodCargo, normalizedSueldoEmp,
+        normalizedSeguro, normalizedHabDesEmp,
         codEmp // WHERE condition
     ];
 
@@ -178,7 +211,18 @@ app.put('/api/empleados/:codEmp', async (req, res) => {
         res.json({ success: true, message: 'Empleado actualizado con éxito' });
 
     } catch (error) {
+        // Log del error para debugging
         console.error('Error al actualizar empleado en la base de datos:', error);
+        
+        // Manejo específico si es un error de dato NOT NULL
+        if (error.code === 'ER_BAD_NULL_ERROR' || error.code === 'ER_WARN_DATA_OUT_OF_RANGE') {
+             return res.status(400).json({
+                success: false,
+                message: `Error de datos: ${error.sqlMessage || error.message}. Revisa los campos obligatorios.`,
+                sqlError: error.sqlMessage || error.message
+            });
+        }
+
         res.status(500).json({
             success: false,
             message: 'Error interno del servidor al actualizar empleado.',
@@ -189,7 +233,7 @@ app.put('/api/empleados/:codEmp', async (req, res) => {
 
 
 /**
- * Endpoint: Eliminar Empleado (DELETE)
+ * Endpoint: Eliminar Empleado (DELETE) 
  */
 app.delete('/api/empleados/:codEmp', async (req, res) => {
     const { codEmp } = req.params;

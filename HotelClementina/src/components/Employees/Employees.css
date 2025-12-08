@@ -5,6 +5,13 @@
     background-color: #f8f9fa; 
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    
+    /* === CORRECCIÓN CLAVE PARA EMPAREJARSE CON RESERVAS === */
+    /* Limita el ancho del contenedor principal y lo centra */
+    width: 100%; 
+    max-width: 1200px; /* Ajusta este valor (ej. 1000px, 1200px) para que coincida con Reservas */
+    margin: 0 auto; /* Centra el contenedor horizontalmente */
+    box-sizing: border-box; 
 }
 
 .form-header {
@@ -38,6 +45,7 @@
     background-color: #768BA6;
 }
 
+/* Botón Cancelar/Secundario */
 .btn-secondary {
     background-color: red;
     color: white;
@@ -59,6 +67,9 @@
     display: flex;
     flex-wrap: wrap;
     gap: 30px;
+    /* Aseguramos que el flex-container use el 100% de ancho disponible dentro del max-width */
+    width: 100%; 
+    justify-content: space-between; 
 }
 
 .form-section {
@@ -66,7 +77,8 @@
     border-radius: 8px;
     padding: 20px;
     margin: 0;
-    flex: 1 1 45%; 
+    /* Fuerza el ancho del elemento para llenar el espacio disponible (50% - la mitad del gap) */
+    flex: 1 1 calc(50% - 15px); 
     min-width: 300px; 
     background-color: white;
 }
@@ -206,8 +218,101 @@ input:checked + .slider:before {
     margin-top: 20px;
 }
 
+
+/* ==================== Estilos AÑADIDOS para el Historial (Edición en Línea) ==================== */
+
+.employee-history-container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.employee-history-container h3 {
+    font-size: 1.5rem;
+    color: #343a40;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse; 
+    font-size: 0.9rem;
+}
+
+.data-table thead th {
+    background-color: #f1f1f1;
+    color: #495057;
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.data-table tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Quita el hover si está en modo edición para no confundir */
+.data-table tbody tr:not([style*="background-color"]):hover { 
+    background-color: #f5f5f5; 
+}
+
+/* Estilo CLAVE para los inputs dentro de la tabla (Edición en Línea) */
+.data-table .inline-input {
+    padding: 3px 6px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9em;
+    width: 100%; 
+    box-sizing: border-box; 
+    margin: 2px 0; /* Pequeño margen vertical para separar */
+}
+
+/* Estilos para los botones de acción de la tabla */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-edit, .btn-delete {
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.2s;
+    border: none;
+    color: white;
+}
+
+.btn-edit {
+    background-color: #ffc107; /* Amarillo */
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+}
+
+.btn-delete {
+    background-color: #dc3545; /* Rojo */
+}
+
+.btn-delete:hover {
+    background-color: #bd2130;
+}
+
 /* Responsive adjustments */
 @media (max-width: 992px) {
+    /* ... estilos responsive existentes ... */
+
     .employee-form {
         gap: 20px;
     }
