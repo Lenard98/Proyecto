@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Agregamos useEffect
+import React, { useState, useEffect } from 'react'; 
 import { useNavigate } from 'react-router-dom';
 
 // Importaciones de componentes
@@ -8,6 +8,7 @@ import EmpresaForm from './Empresa';
 import Habitaciones from './Habitaciones';
 import Reservas from './Reservas';
 import Facturacion from './Facturacion';
+import UsuariosForm from './Usuarios'; // ¡Asegúrate de que la ruta sea correcta!
 
 import logoHotel from '../assets/LogoHotel.jpg';
 import './MenuPage.css'; 
@@ -17,17 +18,17 @@ const allSidebarItems = [
     { id: 'reservas', name: 'Reservas', icon: '🏠' },
     { id: 'huespedes', name: 'Huéspedes', icon: '👥' },
     { id: 'habitaciones', name: 'Habitaciones', icon: '🛏️' },
-    { id: 'empleados', name: 'Empleados', icon: '🧑‍💼' },     // Restringido
+    { id: 'empleados', name: 'Empleados', icon: '🧑‍💼' },   
     { id: 'facturacion', name: 'Facturación', icon: '🧾' },
-    { id: 'configuracion', name: 'Configuración', icon: '⚙️' }, // Restringido (Usuarios)
+    { id: 'usuarios', name: 'Usuarios', icon: '🔑' }, // Opción "Usuarios"
     { id: 'perfil', name: 'Perfil', icon: '👤' },
     { id: 'empresa', name: 'Empresa', icon: '🏢' },
 ];
 
 function MenuPage() {
     const [currentView, setCurrentView] = useState('dashboard'); 
-    const [user, setUser] = useState(null); // Estado para guardar datos del usuario logueado
-    const [filteredItems, setFilteredItems] = useState([]); // Items del menú filtrados por rol
+    const [user, setUser] = useState(null); 
+    const [filteredItems, setFilteredItems] = useState([]); 
     
     const navigate = useNavigate();
 
@@ -39,33 +40,30 @@ function MenuPage() {
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
             
-            const role = parsedUser.tipo_usu; // 1: Admin, 2: Gerente, 3: Recep
+            const role = parsedUser.tipo_usu; 
 
             // Lógica de filtrado de menú según roles
             const items = allSidebarItems.filter(item => {
-                // ADMINISTRADOR (1): Ve todo
+                // ADMINISTRADOR (Rol 1): Ve todo
                 if (role === 1) return true;
+                
+                // RESTO DE ROLES: Solo los Administradores (1) deben ver Usuarios y Empleados (asumiendo tu lógica anterior)
+                if (item.id === 'usuarios' || item.id === 'empleados') return false; 
 
-                // GERENTE (2): Ve todo MENOS Empleados y Configuración (Usuarios)
-                if (role === 2) {
-                    return item.id !== 'empleados' && item.id !== 'configuracion';
-                }
-
-                // RECEPCIONISTA (3): Solo Reservas, Huéspedes, Habitaciones, Facturación, Empresa y Perfil
-                if (role === 3) {
-                    return ['reservas', 'huespedes', 'habitaciones', 'facturacion', 'empresa', 'perfil'].includes(item.id);
-                }
-
-                return false; // Por defecto no ve nada si no tiene rol
+                // Ejemplo de lo que ve Recepcionista (Rol 2, 3, etc. - ajusta según tu base de datos)
+                return true; 
             });
 
             setFilteredItems(items);
+            // Si el usuario no tiene permiso para ver la vista por defecto, lo enviamos a Reservas
+            if (!items.some(item => item.id === currentView) && currentView !== 'dashboard') {
+                setCurrentView('reservas');
+            }
 
         } else {
-            // Si no hay usuario logueado, redirigir al login
             navigate('/');
         }
-    }, [navigate]);
+    }, [navigate, currentView]);
 
 
     // Renderiza el componente de la vista seleccionada
@@ -76,15 +74,17 @@ function MenuPage() {
             case 'huespedes': 
                 return <HuespedesForm />; 
             case 'empleados':
-                return <EmployeesForm />; 
+                // Solo renderiza si tiene permiso (aunque ya se filtró en el menú, es buena práctica)
+                return user?.tipo_usu === 1 ? <EmployeesForm /> : null; 
             case 'empresa':
-                return <EmpresaForm/>;   
+                return <EmpresaForm/>;   
             case 'habitaciones':
                 return <Habitaciones/>;
             case 'facturacion':
                 return <Facturacion/>;
-            case 'configuracion':
-                return <div><h3>Gestión de Usuarios (Configuración)</h3><p>Solo visible para Administradores.</p></div>;
+            case 'usuarios':
+                // Solo el Administrador (1) debería ver esto
+                return user?.tipo_usu === 1 ? <UsuariosForm /> : <div><h3>Acceso Denegado</h3><p>Solo visible para Administradores.</p></div>;
             case 'perfil':
                 return <div><h3>Perfil de Usuario</h3><p>Nombre: {user?.nom_usu}</p><p>Rol ID: {user?.tipo_usu}</p></div>;
             default:
@@ -97,7 +97,6 @@ function MenuPage() {
         }
     };
 
-    // Función de Logout
     const handleLogout = () => {
         localStorage.removeItem('user');
         navigate('/'); 
@@ -106,7 +105,6 @@ function MenuPage() {
     return (
         <div className="dashboard-layout">
             
-            {/* ---------------- Sidebar (Navegación) ---------------- */}
             <div className="sidebar">
                 <div className="sidebar-header">
                     <img src={logoHotel} alt="Logo" className="sidebar-logo" /> 
@@ -114,7 +112,6 @@ function MenuPage() {
                 </div>
                 <nav className="sidebar-nav">
                     <ul>
-                        {/* Usamos filteredItems en lugar de sidebarItems estático */}
                         {filteredItems.map((item) => (
                             <li 
                                 key={item.id}
@@ -125,7 +122,6 @@ function MenuPage() {
                             </li>
                         ))}
                         
-                        {/* Botón de Cerrar Sesión */}
                         <li onClick={handleLogout} className="logout-button">
                             <span className="sidebar-icon">🚪</span> Cerrar Sesión
                         </li>
@@ -133,11 +129,9 @@ function MenuPage() {
                 </nav>
             </div>
             
-            {/* ---------------- Contenido Principal ---------------- */}
             <div className="main-content">
                 <header className="main-header">
                     <div className="user-info">
-                        {/* Mostramos el nombre real del usuario */}
                         <span>{user ? user.nom_usu : 'Usuario Conectado'}</span> 
                         <span className="sidebar-icon">👤</span>
                     </div>
