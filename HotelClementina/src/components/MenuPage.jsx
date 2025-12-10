@@ -1,129 +1,165 @@
 import React, { useState, useEffect } from 'react'; 
 import { useNavigate } from 'react-router-dom';
 
-// Importaciones de componentes
+// 1. IMPORTAMOS LOS ICONOS DE REACT-ICONS
+import { 
+    FaCalendarCheck,      // Reservas
+    FaUsers,              // Huéspedes
+    FaBed,                // Habitaciones
+    FaUserTie,            // Empleados
+    FaFileInvoiceDollar,  // Facturación
+    FaUserCog,            // Usuarios (Admin)
+    FaUserCircle,         // Perfil
+    FaHotel,              // Empresa
+    FaSignOutAlt,         // Salir
+    FaBars                // Menú Hamburguesa
+} from 'react-icons/fa';
+
+// Importaciones de tus componentes
 import HuespedesForm from './Huespedes.jsx'; 
 import EmployeesForm from './Employees/Employees'; 
 import EmpresaForm from './Empresa';
 import Habitaciones from './Habitaciones';
 import Reservas from './Reservas';
 import Facturacion from './Facturacion';
-import UsuariosForm from './Usuarios'; // ¡Asegúrate de que la ruta sea correcta!
+import UsuariosForm from './Usuarios'; 
 
 import logoHotel from '../assets/LogoHotel.jpg';
 import './MenuPage.css'; 
 
-// Lista COMPLETA de los ítems del sidebar
+// 2. ACTUALIZAMOS LA LISTA CON COMPONENTES DE ICONOS
 const allSidebarItems = [
-    { id: 'reservas', name: 'Reservas', icon: '🏠' },
-    { id: 'huespedes', name: 'Huéspedes', icon: '👥' },
-    { id: 'habitaciones', name: 'Habitaciones', icon: '🛏️' },
-    { id: 'empleados', name: 'Empleados', icon: '🧑‍💼' },   
-    { id: 'facturacion', name: 'Facturación', icon: '🧾' },
-    { id: 'usuarios', name: 'Usuarios', icon: '🔑' }, // Opción "Usuarios"
-    { id: 'perfil', name: 'Perfil', icon: '👤' },
-    { id: 'empresa', name: 'Empresa', icon: '🏢' },
+    { id: 'reservas', name: 'Reservas', icon: <FaCalendarCheck /> },
+    { id: 'huespedes', name: 'Huéspedes', icon: <FaUsers /> },
+    { id: 'habitaciones', name: 'Habitaciones', icon: <FaBed /> },
+    { id: 'empleados', name: 'Empleados', icon: <FaUserTie /> },   
+    { id: 'facturacion', name: 'Facturación', icon: <FaFileInvoiceDollar /> },
+    { id: 'usuarios', name: 'Usuarios', icon: <FaUserCog /> },
+    { id: 'perfil', name: 'Perfil', icon: <FaUserCircle /> },
+    { id: 'empresa', name: 'Empresa', icon: <FaHotel /> },
 ];
 
 function MenuPage() {
     const [currentView, setCurrentView] = useState('dashboard'); 
     const [user, setUser] = useState(null); 
     const [filteredItems, setFilteredItems] = useState([]); 
-    
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
     const navigate = useNavigate();
 
-    // 1. EFECTO DE CARGA: Verificar usuario y definir roles
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
-        
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
-            
             const role = parsedUser.tipo_usu; 
 
-            // Lógica de filtrado de menú según roles
             const items = allSidebarItems.filter(item => {
-                // ADMINISTRADOR (Rol 1): Ve todo
                 if (role === 1) return true;
-                
-                // RESTO DE ROLES: Solo los Administradores (1) deben ver Usuarios y Empleados (asumiendo tu lógica anterior)
                 if (item.id === 'usuarios' || item.id === 'empleados') return false; 
-
-                // Ejemplo de lo que ve Recepcionista (Rol 2, 3, etc. - ajusta según tu base de datos)
                 return true; 
             });
-
             setFilteredItems(items);
-            // Si el usuario no tiene permiso para ver la vista por defecto, lo enviamos a Reservas
+            
+            // Si la vista actual no está permitida, redirigir a una segura (o dashboard)
             if (!items.some(item => item.id === currentView) && currentView !== 'dashboard') {
                 setCurrentView('reservas');
             }
-
         } else {
             navigate('/');
         }
     }, [navigate, currentView]);
 
-
-    // Renderiza el componente de la vista seleccionada
     const renderContentView = () => {
         switch (currentView) {
-            case 'reservas':
-                return <Reservas />;
-            case 'huespedes': 
-                return <HuespedesForm />; 
-            case 'empleados':
-                // Solo renderiza si tiene permiso (aunque ya se filtró en el menú, es buena práctica)
-                return user?.tipo_usu === 1 ? <EmployeesForm /> : null; 
-            case 'empresa':
-                return <EmpresaForm/>;   
-            case 'habitaciones':
-                return <Habitaciones/>;
-            case 'facturacion':
-                return <Facturacion/>;
-            case 'usuarios':
-                // Solo el Administrador (1) debería ver esto
-                return user?.tipo_usu === 1 ? <UsuariosForm /> : <div><h3>Acceso Denegado</h3><p>Solo visible para Administradores.</p></div>;
-            case 'perfil':
-                return <div><h3>Perfil de Usuario</h3><p>Nombre: {user?.nom_usu}</p><p>Rol ID: {user?.tipo_usu}</p></div>;
-            default:
-                return (
-                    <div style={{textAlign: 'center', marginTop: '50px'}}>
-                        <h2>Bienvenido al Sistema Hotelero Clementina</h2>
-                        <p>Seleccione una opción del menú para comenzar.</p>
-                    </div>
-                );
+            case 'reservas': return <Reservas />;
+            case 'huespedes': return <HuespedesForm />; 
+            case 'empleados': return user?.tipo_usu === 1 ? <EmployeesForm /> : null; 
+            case 'empresa': return <EmpresaForm/>;   
+            case 'habitaciones': return <Habitaciones/>;
+            case 'facturacion': return <Facturacion/>;
+            case 'usuarios': return user?.tipo_usu === 1 ? <UsuariosForm /> : <div><h3>Acceso Denegado</h3></div>;
+            case 'perfil': return <div><h3>Perfil de Usuario</h3><p>Nombre: {user?.nom_usu}</p></div>;
+            
+            // 3. MANTENEMOS TU PANTALLA DE BIENVENIDA CORRECTA
+            default: return (
+                <div className="welcome-container">
+                    <h2>Bienvenido al Sistema Hotelero Clementina</h2>
+                    <p>Seleccione una opción del menú para comenzar.</p>
+                </div>
+            );
         }
     };
 
-    const handleLogout = () => {
+    const handleLogoutClick = () => {
+        setShowLogoutConfirm(true);
+        setIsMobileMenuOpen(false);
+    };
+
+    const confirmLogout = () => {
         localStorage.removeItem('user');
+        setShowLogoutConfirm(false);
         navigate('/'); 
+    };
+
+    const cancelLogout = () => {
+        setShowLogoutConfirm(false);
+    };
+
+    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+    
+    const handleMenuClick = (id) => {
+        setCurrentView(id);
+        setIsMobileMenuOpen(false);
     };
 
     return (
         <div className="dashboard-layout">
             
-            <div className="sidebar">
+            <div 
+                className={`overlay ${isMobileMenuOpen ? 'show' : ''}`} 
+                onClick={() => setIsMobileMenuOpen(false)}
+            ></div>
+
+            {/* Modal de Confirmación */}
+            {showLogoutConfirm && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>¿Cerrar Sesión?</h3>
+                        <p>¿Estás seguro que deseas salir del sistema?</p>
+                        <div className="modal-buttons">
+                            <button className="btn-cancel" onClick={cancelLogout}>Cancelar</button>
+                            <button className="btn-confirm" onClick={confirmLogout}>Sí, salir</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
                 <div className="sidebar-header">
                     <img src={logoHotel} alt="Logo" className="sidebar-logo" /> 
                     <h2 className="sidebar-title">HOTEL CLEMENTINA</h2>
                 </div>
+                
                 <nav className="sidebar-nav">
                     <ul>
                         {filteredItems.map((item) => (
                             <li 
                                 key={item.id}
                                 className={currentView === item.id ? 'active' : ''}
-                                onClick={() => setCurrentView(item.id)}
+                                onClick={() => handleMenuClick(item.id)}
                             >
-                                <span className="sidebar-icon">{item.icon}</span> {item.name}
+                                {/* Aquí se renderiza el Icono de React-Icons */}
+                                <span className="sidebar-icon">{item.icon}</span> 
+                                {item.name}
                             </li>
                         ))}
                         
-                        <li onClick={handleLogout} className="logout-button">
-                            <span className="sidebar-icon">🚪</span> Cerrar Sesión
+                        <li onClick={handleLogoutClick} className="logout-button">
+                            {/* Icono de Salida actualizado */}
+                            <span className="sidebar-icon"><FaSignOutAlt /></span> 
+                            Cerrar Sesión
                         </li>
                     </ul>
                 </nav>
@@ -131,9 +167,15 @@ function MenuPage() {
             
             <div className="main-content">
                 <header className="main-header">
+                    {/* Botón Hamburguesa actualizado */}
+                    <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+                        <FaBars />
+                    </button>
+
                     <div className="user-info">
-                        <span>{user ? user.nom_usu : 'Usuario Conectado'}</span> 
-                        <span className="sidebar-icon">👤</span>
+                        <span>{user ? user.nom_usu : 'Usuario'}</span> 
+                        {/* Icono de Usuario (Perfil pequeño) */}
+                        <span className="sidebar-icon" style={{marginLeft: '10px'}}><FaUserCircle /></span>
                     </div>
                 </header>
                 <div className="content-area">
