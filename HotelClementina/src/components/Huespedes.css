@@ -1,61 +1,45 @@
-/* components/Huespedes/Huespedes.css */
-/* Este es el MISMO CSS de Employees.css para que se vea idéntico */
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
 
-.employee-form-container {
+/* --- Wrapper Principal --- */
+.huespedes-page-wrapper {
+    background-color: #F4F4F4 !important; /* FORZADO: Gris claro */
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
     padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 }
 
+/* --- Contenedores tipo Tarjeta --- */
+.employee-form-container,
+.guest-history-section {
+    background-color: #FFFFFF !important; /* FORZADO: Blanco puro */
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    border: none !important;
+    margin-bottom: 0;
+}
+
+/* --- Encabezados --- */
 .form-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 15px;
-    border-bottom: 2px solid #e9ecef;
+    border-bottom: 3px solid #D4AF37 !important; /* FORZADO: Línea Dorada */
 }
 
 .form-header h2 {
     font-size: 1.8rem;
-    color: #343a40;
+    color: #111111 !important; /* FORZADO: Negro Mate */
     margin: 0;
+    font-weight: 700;
 }
 
-/* Estilos de botones */
-.btn-primary {
-    background-color: #5E637A;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-    background-color: #768BA6;
-}
-
-.btn-secondary {
-    background-color: red;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.2s;
-    margin-right: 10px;
-}
-
-.btn-secondary:hover {
-    background-color: #9A0000;
-}
-
-/* Estructura del Formulario */
+/* --- Formularios e Inputs --- */
 .employee-form {
     display: flex;
     flex-wrap: wrap;
@@ -63,333 +47,165 @@
 }
 
 .form-section {
-    border: 1px solid #dee2e6;
+    border: 1px solid #eee;
     border-radius: 8px;
-    padding: 20px;
+    padding: 25px;
     margin: 0;
-    flex: 1 1 100%; /* CAMBIADO: Fuerza a la única sección a ocupar el 100% */
-    min-width: 300px;
-    background-color: white;
+    flex: 1 1 100%;
+    background-color: #fff !important;
 }
 
 legend {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    color: #343a40;
+    color: #D4AF37 !important; /* FORZADO: Dorado */
     padding: 0 10px;
+    text-transform: uppercase;
 }
 
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
+    gap: 25px;
 }
 
 .form-group label {
-    font-weight: 500;
-    margin-bottom: 5px;
-    color: #495057;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333333 !important;
     font-size: 0.9rem;
 }
 
+/* Inputs */
 .form-group input:not([type="checkbox"]),
 .form-group select,
 .form-group textarea {
-    padding: 10px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
+    padding: 12px;
+    border: 1px solid #bdc3c7 !important;
+    border-radius: 6px;
     font-size: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: #f9f9f9 !important;
+    color: #333333 !important;
+    outline: none;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    outline: none;
+    border-color: #D4AF37 !important; /* FORZADO: Borde Dorado */
+    background-color: #FFFFFF !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15) !important;
 }
 
-.full-row {
-    grid-column: 1 / -1;
-}
-
-/* Estilos específicos para la sección de Acceso */
-.access-system {
-    flex-grow: 1;
-    flex-basis: 100%;
-}
-
-.access-grid {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.read-only-input {
-    background-color: #e9ecef !important;
-    cursor: not-allowed;
-}
-
-/* Estilos para el interruptor (toggle) */
-.toggle-group {
-    grid-column: 3 / 4;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    flex-direction: row;
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: 0.4s;
-}
-
-input:checked + .slider {
-    background-color: #28a745;
-}
-
-input:checked + .slider:before {
-    transform: translateX(26px);
-}
-
-.slider.round {
-    border-radius: 34px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
-}
-
-/* Botones al final del formulario */
+/* --- Botones (Aquí es donde Bootstrap suele molestar) --- */
 .form-actions {
-    grid-column: 1 / -1;
     display: flex;
     justify-content: flex-end;
     padding-top: 20px;
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid #eee;
     width: 100%;
     margin-top: 20px;
+    gap: 15px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 992px) {
-    .employee-form {
-        gap: 20px;
-    }
-    .form-section {
-        flex-basis: 100%;
-        min-width: unset;
-    }
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    .access-grid {
-        grid-template-columns: 1fr;
-    }
-    .full-row {
-        grid-column: unset;
-    }
-    .toggle-group {
-        grid-column: unset;
-        justify-content: flex-start;
-    }
-}
-
-.message-success {
-    padding: 10px;
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    text-align: center;
+/* Botón Principal (Registrar/Guardar) */
+.btn-primary, .btn-save {
+    background-color: #D4AF37 !important; /* FORZADO: Dorado */
+    color: #FFFFFF !important;
+    border: 1px solid #D4AF37 !important;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
     font-weight: bold;
+    text-transform: uppercase;
 }
 
-.message-error {
-    padding: 10px;
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+.btn-primary:hover, .btn-save:hover {
+    background-color: #C2A032 !important; /* Dorado Oscuro */
+    border-color: #C2A032 !important;
+}
+
+/* Botón Secundario (Cancelar) */
+.btn-secondary, .btn-cancel-edit {
+    background-color: #ed0000 !important; /* FORZADO: Negro */
+    color: white !important;
+    border: 1px solid #ed0000 !important;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-secondary:hover, .btn-cancel-edit:hover {
+    background-color: #c20000 !important;
+    border-color:#c20000 !important;
+}
+
+/* Botón Eliminar */
+.btn-delete {
+    background-color: #A00000 !important;
+    color: white !important;
+    border: none;
+    padding: 8px 12px;
     border-radius: 4px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-weight: bold;
+    cursor: pointer;
 }
 
-.form-grid-single {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
+/* Botón Editar Tabla */
+.btn-edit {
+    background-color: #13a300 !important;
+    color: white !important;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-edit:hover {
+    color: #ffffff !important;
 }
 
-/* --- INICIO: ESTILOS PARA LA TABLA DE HISTORIAL Y EDICIÓN --- */
-
-.huespedes-page-wrapper {
-    display: flex;
-    flex-direction: column; 
-    gap: 0px; 
-}
-
-.guest-history-section {
-    margin-top: 0px;
-    padding: 20px;
-    background-color: #ffffff; 
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow-x: auto; 
-}
-
-.guest-history-section .form-header h2 {
-    font-size: 1.5rem; 
-}
-
-.history-table-container {
-    width: 100%;
-    overflow-x: auto; 
-}
-
+/* --- Tabla de Historial --- */
 .history-table-container table {
     width: 100%;
-    min-width: 1000px; /* Incrementado para acomodar la columna de Acciones */
-    border-collapse: collapse;
+    min-width: 1000px;
+    border-collapse: separate;
+    border-spacing: 0;
     margin-top: 15px;
 }
 
-.history-table-container th, 
-.history-table-container td {
-    border: 1px solid #dee2e6; 
-    padding: 10px 8px;
-    text-align: left;
-    white-space: nowrap; 
-    font-size: 0.85rem;
-}
-
 .history-table-container th {
-    background-color: #5E637A; 
-    color: white;
+    background-color: #111111 !important; /* FORZADO: Negro Mate */
+    color: #D4AF37 !important; /* FORZADO: Texto Dorado */
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    padding: 15px;
+    border-bottom: 3px solid #D4AF37 !important;
+    text-align: left;
 }
 
-.history-table-container tr:nth-child(even) {
-    background-color: #f9f9f9;
+.history-table-container td {
+    border-bottom: 1px solid #eee;
+    padding: 12px 15px;
+    color: #333;
+    background-color: white;
 }
 
-.history-table-container tr:hover:not(.editing-row) {
-    background-color: #f1f1f1;
+/* Fila en Edición */
+.editing-row td {
+    background-color: #FFFDF5 !important; /* Fondo crema */
+    border-bottom: 1px solid #D4AF37;
 }
 
-/* Estilo para la fila que está siendo editada */
-.editing-row {
-    background-color: #fff3cd !important; /* Resalta la fila en edición */
-    border: 2px solid #ffc107;
-}
-
-/* Estilo para los inputs dentro de la tabla */
 .table-input {
-    padding: 3px 5px;
-    border: 1px solid #ced4da;
-    border-radius: 3px;
-    width: 100%;
-    box-sizing: border-box;
-    font-size: 0.8rem;
-    background-color: white; /* Asegura fondo blanco al editar */
-}
-
-/* Deshabilitar el formulario de registro si se está editando la tabla */
-.form-section[disabled] {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-/* Estilos de botones de acción */
-.action-cell {
-    display: flex;
-    gap: 5px;
-    min-width: 80px; /* Asegura espacio para los botones */
-}
-
-.action-cell button {
-    padding: 5px 8px;
-    font-size: 0.75rem;
+    border: 1px solid #D4AF37 !important;
+    padding: 5px;
     border-radius: 4px;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: background-color 0.2s;
+    width: 100%;
 }
 
-.action-cell button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+/* Ajustes Responsive */
+@media (max-width: 992px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-actions { flex-direction: column; }
+    .btn-primary, .btn-secondary { width: 100%; margin-bottom: 10px; }
 }
-
-.btn-edit {
-    background-color: #2a6fdb; /* Azul */
-    color: white;
-}
-.btn-edit:hover {
-    background-color: #1a57b8;
-}
-
-.btn-delete {
-    background-color: #dc3545; /* Rojo */
-    color: white;
-}
-.btn-delete:hover {
-    background-color: #c82333;
-}
-
-.btn-save {
-    background-color: #28a745; /* Verde */
-    color: white;
-}
-.btn-save:hover {
-    background-color: #1e7e34;
-}
-
-.btn-cancel-edit {
-    background-color: #ffc107; /* Amarillo/Naranja */
-    color: #343a40;
-}
-.btn-cancel-edit:hover {
-    background-color: #e0a800;
-}
-/* --- FIN: ESTILOS PARA LA TABLA DE HISTORIAL Y EDICIÓN --- */

@@ -35,7 +35,6 @@ const allSidebarItems = [
     { id: 'empleados', name: 'Empleados', icon: <FaUserTie /> },   
     { id: 'facturacion', name: 'Facturación', icon: <FaFileInvoiceDollar /> },
     { id: 'usuarios', name: 'Usuarios', icon: <FaUserCog /> },
-    { id: 'perfil', name: 'Perfil', icon: <FaUserCircle /> },
     { id: 'empresa', name: 'Empresa', icon: <FaHotel /> },
 ];
 

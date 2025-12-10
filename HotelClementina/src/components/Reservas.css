@@ -1,45 +1,195 @@
 /* DISEÑO GENERAL PMS */
 .pms-container {
-    max-width: 1200px; margin: 30px auto; padding: 0 20px; font-family: 'Segoe UI', sans-serif;
+    max-width: 1200px; 
+    margin: 30px auto; 
+    padding: 0 20px; 
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #F4F4F4; /* Fondo general opcional si el body no lo tiene */
 }
+
 .pms-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
-    border-bottom: 3px solid #2c3e50; padding-bottom: 15px;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 30px;
+    border-bottom: 3px solid #D4AF37; /* Acento Dorado */
+    padding-bottom: 15px;
 }
-.pms-header h2 { color: #2c3e50; margin: 0; font-size: 1.8rem; display: flex; align-items: center; gap: 10px; }
-.pms-date-display { font-size: 1.1rem; color: #7f8c8d; font-weight: 600; text-transform: capitalize; }
+
+.pms-header h2 { 
+    color: #111111; /* Negro Mate */
+    margin: 0; 
+    font-size: 1.8rem; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+
+.pms-date-display { 
+    font-size: 1.1rem; 
+    color: #333333; /* Texto Oscuro */
+    font-weight: 600; 
+    text-transform: capitalize; 
+}
 
 /* GRID LAYOUT */
-.pms-grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
+.pms-grid-layout { 
+    display: grid; 
+    grid-template-columns: 1.2fr 0.8fr; 
+    gap: 30px; 
+}
 
 /* TARJETAS */
-.pms-card { background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); overflow: hidden; }
-.card-header { background: #2c3e50; color: white; padding: 15px 20px; }
-.card-header h3 { margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-.card-body { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+.pms-card { 
+    background: white; 
+    border-radius: 10px; 
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08); 
+    overflow: hidden; 
+}
+
+.card-header { 
+    background: #111111; /* Negro Mate */
+    color: #FFFFFF; /* Texto Claro */
+    padding: 15px 20px; 
+}
+
+.card-header h3 { 
+    margin: 0; 
+    font-size: 1.1rem; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+
+.card-body { 
+    padding: 25px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+}
 
 /* INPUTS ESTILIZADOS */
 .form-group-row { display: flex; gap: 20px; }
 .input-wrapper { flex: 1; }
-.input-wrapper label { display: block; font-weight: 600; color: #34495e; margin-bottom: 8px; font-size: 0.9rem; }
-.input-icon { 
-    display: flex; align-items: center; border: 1px solid #bdc3c7; border-radius: 6px; padding: 0 12px; background: #f9f9f9; transition: all 0.2s;
+
+.input-wrapper label { 
+    display: block; 
+    font-weight: 600; 
+    color: #333333; /* Texto Oscuro */
+    margin-bottom: 8px; 
+    font-size: 0.9rem; 
 }
-.input-icon:focus-within { border-color: #3498db; background: white; box-shadow: 0 0 0 3px rgba(52,152,219,0.1); }
-.input-icon svg { color: #7f8c8d; margin-right: 10px; }
-.input-icon input { border: none; background: transparent; width: 100%; padding: 12px 0; font-size: 1rem; outline: none; }
+
+.input-icon { 
+    display: flex; 
+    align-items: center; 
+    border: 1px solid #bdc3c7; 
+    border-radius: 6px; 
+    padding: 0 12px; 
+    background: #f9f9f9; 
+    transition: all 0.2s;
+}
+
+/* Efecto Focus en Dorado */
+.input-icon:focus-within { 
+    border-color: #D4AF37; /* Dorado */
+    background: white; 
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); /* Sombra dorada suave */
+}
+
+.input-icon svg { 
+    color: #D4AF37; /* Iconos en Dorado */
+    margin-right: 10px; 
+}
+
+.input-icon input { 
+    border: none; 
+    background: transparent; 
+    width: 100%; 
+    padding: 12px 0; 
+    font-size: 1rem; 
+    outline: none; 
+    color: #333333;
+}
 
 .full-width { width: 100%; }
-.big-select { width: 100%; padding: 12px; border: 2px solid #3498db; border-radius: 6px; font-size: 1rem; background: #eaf6ff; cursor: pointer; }
-textarea { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; resize: vertical; }
+
+/* Select Grande estilizado */
+.big-select { 
+    width: 100%; 
+    padding: 12px; 
+    border: 2px solid #D4AF37; /* Borde Dorado */
+    border-radius: 6px; 
+    font-size: 1rem; 
+    background: #FFFEF9; /* Un blanco muy cálido o blanco puro */
+    cursor: pointer; 
+    color: #333333;
+    outline: none;
+}
+
+.big-select:focus {
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+}
+
+textarea { 
+    width: 100%; 
+    padding: 10px; 
+    border: 1px solid #bdc3c7; 
+    border-radius: 6px; 
+    resize: vertical; 
+}
 
 /* CAJA DE ESTADÍA */
-.stay-duration-box { background: #f8f9fa; border: 1px dashed #bdc3c7; padding: 15px; border-radius: 8px; display: flex; align-items: center; gap: 20px; }
-.days-input { width: 60px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-weight: bold; }
-.date-preview { display: flex; flex-direction: column; line-height: 1.2; color: #27ae60; }
-.date-preview strong { font-size: 1.2rem; }
-
-.pms-btn-primary { 
-    background: #27ae60; color: white; border: none; padding: 15px; width: 100%; font-size: 1.1rem; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; transition: background 0.2s;
+.stay-duration-box { 
+    background: #f8f9fa; 
+    border: 1px dashed #D4AF37; /* Borde punteado dorado */
+    padding: 15px; 
+    border-radius: 8px; 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
 }
-.pms-btn-primary:hover { background: #2ecc71; }
+
+.days-input { 
+    width: 60px; 
+    padding: 8px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    text-align: center; 
+    font-weight: bold; 
+}
+
+.date-preview { 
+    display: flex; 
+    flex-direction: column; 
+    line-height: 1.2; 
+    color: #111111; /* Negro para contraste */
+}
+
+.date-preview strong { 
+    font-size: 1.2rem; 
+    color: #D4AF37; /* Texto fuerte en dorado */
+}
+
+/* BOTÓN PRINCIPAL */
+.pms-btn-primary { 
+    background: #D4AF37; /* Fondo Dorado */
+    color: #FFFFFF; /* Texto Blanco */
+    border: none; 
+    padding: 15px; 
+    width: 100%; 
+    font-size: 1.1rem; 
+    font-weight: bold; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    margin-top: 10px; 
+    transition: background 0.2s, transform 0.1s;
+}
+
+.pms-btn-primary:hover { 
+    background: #C2A032; /* Dorado un poco más oscuro al pasar el mouse */
+}
+
+.pms-btn-primary:active {
+    transform: scale(0.98);
+}

@@ -1,5 +1,3 @@
-// components/Huespedes/Huespedes.jsx
-
 import React, { useState, memo, useEffect } from 'react';
 import axios from 'axios';
 import './Huespedes.css'; 
@@ -377,7 +375,7 @@ export default function Huespedes() {
                     <fieldset className="form-section" disabled={!!editingGuest}>
                         <legend>Tipo de Cliente y Ubicación</legend>
                         <div className="form-grid">
-                            <FormInput onChangeHandler={handleChange} label="Tipo de Cliente (Tipo_Cli)" name="Tipo_Cli" value={guestData.Tipo_Cli} type="select" required disabled={!!editingGuest}>
+                            <FormInput onChangeHandler={handleChange} label="Tipo de Cliente" name="Tipo_Cli" value={guestData.Tipo_Cli} type="select" required disabled={!!editingGuest}>
                                 <option value="Particular">Particular</option>
                                 <option value="Empresa">Empresa</option>
                             </FormInput>
@@ -385,7 +383,7 @@ export default function Huespedes() {
                             {guestData.Tipo_Cli === 'Empresa' ? (
                                 <FormInput 
                                     onChangeHandler={handleChange} 
-                                    label="Nombre de la Empresa (Empresa_Huesped)" 
+                                    label="Nombre de la Empresa" 
                                     name="Empresa_Huesped" 
                                     value={guestData.Empresa_Huesped} 
                                     type="select" 

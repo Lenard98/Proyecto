@@ -3,6 +3,9 @@ import axios from 'axios';
 import './Facturacion.css'; 
 import { FaSearch, FaPrint, FaCreditCard, FaMoneyBillAlt, FaConciergeBell, FaTrash, FaPlus } from 'react-icons/fa';
 
+// --- IMPORTACIÓN CORRECTA DEL LOGO ---
+import logoHotel from '../assets/LogoHotel.jpg';
+
 const API_URL = 'http://localhost:3002/api';
 
 // ***************************************************************
@@ -135,7 +138,7 @@ const Facturacion = () => {
   };
 
   return (
-    <div className="pms-billing-container">
+    <div className="pms-billing-container fade-in">
       
       {/* SIDEBAR: SELECCIÓN Y EXTRAS */}
       <div className="billing-controls">
@@ -216,10 +219,10 @@ const Facturacion = () => {
             <h3 style={{marginTop: '20px'}}><FaCreditCard /> Método de Pago</h3>
             <div className="payment-methods">
                 <button className={`method-btn ${metodoPago===1 ? 'active':''}`} onClick={()=>setMetodoPago(1)}>
-                    <FaMoneyBillAlt /> Efectivo
+                    <FaMoneyBillAlt size={20}/> Efectivo
                 </button>
                 <button className={`method-btn ${metodoPago===0 ? 'active':''}`} onClick={()=>setMetodoPago(0)}>
-                    <FaCreditCard /> Tarjeta
+                    <FaCreditCard size={20}/> Tarjeta
                 </button>
             </div>
           </div>
@@ -232,7 +235,10 @@ const Facturacion = () => {
         {totales ? (
             <div className="paper-invoice">
                 <div className="inv-header">
-                    <div className="inv-logo-box">HC</div> 
+                    {/* --- AQUÍ VA LA IMAGEN DEL LOGO --- */}
+                    <div className="inv-logo-box">
+                        <img src={logoHotel} alt="Logo Hotel Clementina" className="inv-logo-img" />
+                    </div> 
                     <div className="inv-company-info">
                         <h2>HOTEL CLEMENTINA</h2>
                         <p>RTN: HN-DANLI-001</p>
@@ -284,11 +290,17 @@ const Facturacion = () => {
                 </table>
 
                 <div className="inv-footer">
+                    {/* --- SECCIÓN DE TOTALES CORREGIDA --- */}
                     <div className="inv-totals">
                         <div className="total-row"><span>Subtotal:</span> <span>L. {totales.subtotal.toFixed(2)}</span></div>
                         <div className="total-row"><span>I.S.V. (15%):</span> <span>L. {totales.isv.toFixed(2)}</span></div>
                         <div className="total-row"><span>Turismo (4%):</span> <span>L. {totales.turismo.toFixed(2)}</span></div>
-                        <div className="total-row grand-total"><span>TOTAL A PAGAR:</span> <span>L. {totales.total.toFixed(2)}</span></div>
+                        
+                        {/* TOTAL A PAGAR: ESTRUCTURA PARA QUE SE SEPARE CORRECTAMENTE */}
+                        <div className="total-row grand-total">
+                            <span>TOTAL A PAGAR:</span> 
+                            <span>L. {totales.total.toFixed(2)}</span>
+                        </div>
                 </div>
                 </div>
 

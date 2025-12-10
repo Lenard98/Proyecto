@@ -122,7 +122,7 @@ const EmpresaHistoryTable = memo(({ history, editingEmpresa, handleEdit, handleD
             <table>
                 <thead>
                     <tr>
-                        <th style={{width: '20%'}}>RTN (Cod_Emp)</th>
+                        <th style={{width: '20%'}}>RTN</th>
                         <th style={{width: '45%'}}>Nombre de la Empresa</th>
                         <th style={{width: '35%'}}>Acciones</th>
                     </tr>
