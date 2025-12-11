@@ -1,109 +1,186 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { useNavigate } from 'react-router-dom';
+import { 
+    FaCalendarCheck, 
+    FaUsers, 
+    FaBed, 
+    FaUserTie, 
+    FaFileInvoiceDollar, 
+    FaUserCog, 
+    FaUserCircle, 
+    FaHotel, 
+    FaSignOutAlt, 
+    FaBars 
+} from 'react-icons/fa';
 
-// 1. IMPORTACIÓN CORREGIDA: Apunta directamente al archivo Huespedes.jsx
 import HuespedesForm from './Huespedes.jsx'; 
-
 import EmployeesForm from './Employees/Employees'; 
-import logoHotel from '../assets/LogoHotel.jpg';
-import './MenuPage.css'; 
 import EmpresaForm from './Empresa';
 import Habitaciones from './Habitaciones';
 import Reservas from './Reservas';
 import Facturacion from './Facturacion';
+import UsuariosForm from './Usuarios'; 
 
+import logoHotel from '../assets/LogoHotel.jpg';
+import logoDos from '../assets/LogoDos.png';
+import './MenuPage.css'; 
 
-// Lista de los ítems del sidebar
-const sidebarItems = [
-    { id: 'reservas', name: 'Reservas', icon: '🏠' },
-    { id: 'huespedes', name: 'Huéspedes', icon: '👥' },
-    { id: 'habitaciones', name: 'Habitaciones', icon: '🛏️' },
-    { id: 'empleados', name: 'Empleados', icon: '🧑‍💼' },
-    { id: 'facturacion', name: 'Facturación', icon: '🧾' },
-    { id: 'configuracion', name: 'Configuración', icon: '⚙️' },
-    { id: 'perfil', name: 'Perfil', icon: '👤' },
-    { id: 'empresa', name: 'Empresa', icon: '🏢' },
+const allSidebarItems = [
+    { id: 'reservas', name: 'Reservas', icon: <FaCalendarCheck /> },
+    { id: 'huespedes', name: 'Huéspedes', icon: <FaUsers /> },
+    { id: 'habitaciones', name: 'Habitaciones', icon: <FaBed /> },
+    { id: 'empleados', name: 'Empleados', icon: <FaUserTie /> },   
+    { id: 'facturacion', name: 'Facturación', icon: <FaFileInvoiceDollar /> },
+    { id: 'usuarios', name: 'Usuarios', icon: <FaUserCog /> },
+    { id: 'empresa', name: 'Empresa', icon: <FaHotel /> },
 ];
 
 function MenuPage() {
-    // Estado inicial cambiado a 'dashboard'
     const [currentView, setCurrentView] = useState('dashboard'); 
+    const [user, setUser] = useState(null); 
+    const [filteredItems, setFilteredItems] = useState([]); 
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
     const navigate = useNavigate();
 
-    // Renderiza el componente de la vista seleccionada
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            const role = parsedUser.tipo_usu; 
+
+            const items = allSidebarItems.filter(item => {
+                if (role === 1) return true;
+                if (item.id === 'usuarios' || item.id === 'empleados') return false; 
+                return true; 
+            });
+            setFilteredItems(items);
+            
+            if (!items.some(item => item.id === currentView) && currentView !== 'dashboard') {
+                setCurrentView('reservas');
+            }
+        } else {
+            navigate('/');
+        }
+    }, [navigate, currentView]);
+
+    const handleLogoClick = () => {
+        setCurrentView('dashboard'); 
+        setIsMobileMenuOpen(false);  
+    };
+
     const renderContentView = () => {
         switch (currentView) {
-            case 'reservas':
-                return <Reservas />;
-                
-            case 'huespedes': 
-                // 2. CASO 'HUESPEDES' AÑADIDO: Muestra el componente Huéspedes
-                return <HuespedesForm />; 
-
-            case 'empleados':
-                return <EmployeesForm />; 
-                
-            case 'empresa':
-                return <EmpresaForm/>;   
-
-                
-            case 'habitaciones':
-                return <Habitaciones/>;
-
-            case 'facturacion':
-                return <Facturacion/>;
-                
-            case 'configuracion':
-                return <div>Vista de Configuración</div>;
-                
-            case 'perfil':
-                return <div>Vista de Perfil</div>;
-                
-            default:
-                return <div>Bienvenido al Dashboard.</div>;
+            case 'reservas': return <Reservas />;
+            case 'huespedes': return <HuespedesForm />; 
+            case 'empleados': return user?.tipo_usu === 1 ? <EmployeesForm /> : null; 
+            case 'empresa': return <EmpresaForm/>;   
+            case 'habitaciones': return <Habitaciones/>;
+            case 'facturacion': return <Facturacion/>;
+            case 'usuarios': return user?.tipo_usu === 1 ? <UsuariosForm /> : <div><h3>Acceso Denegado</h3></div>;
+            case 'perfil': return <div><h3>Perfil de Usuario</h3><p>Nombre: {user?.nom_usu}</p></div>;
+            
+            default: return (
+                <div className="welcome-container">
+                    <h2>Bienvenido al Sistema del Hotel Clementina</h2>
+                    <p>Seleccione una opción del menú para comenzar.</p>
+                    <img 
+                        src={logoDos} 
+                        alt="Logo Hotel Clementina" 
+                        style={{ maxWidth: '300px', marginTop: '20px', borderRadius: '8px' }} 
+                    />
+                </div>
+            );
         }
     };
 
-    // Función de Logout
-    const handleLogout = () => {
+    const handleLogoutClick = () => {
+        setShowLogoutConfirm(true);
+        setIsMobileMenuOpen(false);
+    };
+
+    const confirmLogout = () => {
         localStorage.removeItem('user');
+        setShowLogoutConfirm(false);
         navigate('/'); 
+    };
+
+    const cancelLogout = () => {
+        setShowLogoutConfirm(false);
+    };
+
+    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+    
+    const handleMenuClick = (id) => {
+        setCurrentView(id);
+        setIsMobileMenuOpen(false);
     };
 
     return (
         <div className="dashboard-layout">
             
-            {/* ---------------- Sidebar (Navegación) ---------------- */}
-            <div className="sidebar">
+            <div 
+                className={`overlay ${isMobileMenuOpen ? 'show' : ''}`} 
+                onClick={() => setIsMobileMenuOpen(false)}
+            ></div>
+
+            {showLogoutConfirm && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>¿Cerrar Sesión?</h3>
+                        <p>¿Estás seguro que deseas salir del sistema?</p>
+                        <div className="modal-buttons">
+                            <button className="btn-cancel" onClick={cancelLogout}>Cancelar</button>
+                            <button className="btn-confirm" onClick={confirmLogout}>Sí, salir</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
                 <div className="sidebar-header">
-                    <img src={logoHotel} alt="Logo" className="sidebar-logo" /> 
+                    <img 
+                        src={logoHotel} 
+                        alt="Logo" 
+                        className="sidebar-logo" 
+                        onClick={handleLogoClick}
+                        title="Ir al Inicio"
+                    /> 
                     <h2 className="sidebar-title">HOTEL CLEMENTINA</h2>
                 </div>
+                
                 <nav className="sidebar-nav">
                     <ul>
-                        {sidebarItems.map((item) => (
+                        {filteredItems.map((item) => (
                             <li 
                                 key={item.id}
                                 className={currentView === item.id ? 'active' : ''}
-                                onClick={() => setCurrentView(item.id)}
+                                onClick={() => handleMenuClick(item.id)}
                             >
-                                <span className="sidebar-icon">{item.icon}</span> {item.name}
+                                <span className="sidebar-icon">{item.icon}</span> 
+                                {item.name}
                             </li>
                         ))}
                         
-                        {/* Botón de Cerrar Sesión */}
-                        <li onClick={handleLogout} className="logout-button">
-                            <span className="sidebar-icon">🚪</span> Cerrar Sesión
+                        <li onClick={handleLogoutClick} className="logout-button">
+                            <span className="sidebar-icon"><FaSignOutAlt /></span> 
+                            Cerrar Sesión
                         </li>
                     </ul>
                 </nav>
             </div>
             
-            {/* ---------------- Contenido Principal ---------------- */}
             <div className="main-content">
                 <header className="main-header">
+                    <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+                        <FaBars />
+                    </button>
+
                     <div className="user-info">
-                        <span>Usuario Conectado</span> <span className="sidebar-icon">👤</span>
+                        <span>{user ? user.nom_usu : 'Usuario'}</span> 
+                        <span className="sidebar-icon" style={{marginLeft: '10px'}}><FaUserCircle /></span>
                     </div>
                 </header>
                 <div className="content-area">

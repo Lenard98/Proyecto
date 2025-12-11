@@ -1,213 +1,341 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Facturacion.css'; 
-import { FaSearch, FaPrint, FaCreditCard, FaMoneyBillAlt, FaConciergeBell } from 'react-icons/fa';
+import { FaSearch, FaPrint, FaCreditCard, FaMoneyBillAlt, FaConciergeBell, FaTrash, FaPlus, FaUserFriends } from 'react-icons/fa';
+import logoHotel from '../assets/LogoHotel.jpg';
 
 const API_URL = 'http://localhost:3002/api';
 
-// ***************************************************************
-// CAMBIO CLAVE: DATOS DEL USUARIO LOGUEADO
-// Estos valores DEBEN provenir de tu estado o contexto de autenticación real.
-// ***************************************************************
-const CODIGO_USUARIO_ACTIVO = 'U002'; // Cod_Usu para insertar en DB
-const NOMBRE_USUARIO_ACTIVO = 'Maria Lopez (Recep)'; // Nom_Usu para mostrar en factura
+const CODIGO_USUARIO_ACTIVO = 'U002'; 
+const NOMBRE_USUARIO_ACTIVO = 'Maria Lopez (Recep)'; 
 
 const Facturacion = () => {
-  const [habitacionesOcupadas, setHabitacionesOcupadas] = useState([]);
-  const [seleccionada, setSeleccionada] = useState(null);
-  
-  // Lógica: 1=Efectivo, 0=Tarjeta (Para guardar en tabla Reserva columna TipoPago)
-  const [metodoPago, setMetodoPago] = useState(1); 
-  const [extras, setExtras] = useState({ personas: 0, desayuno: false });
-  const [totales, setTotales] = useState(null);
+  const [habitacionesOcupadas, setHabitacionesOcupadas] = useState([]);
+  const [seleccionada, setSeleccionada] = useState(null);
+  const [fechaSalidaCalculo, setFechaSalidaCalculo] = useState('');
+  const [metodoPago, setMetodoPago] = useState(1); 
+  const [cargosExtra, setCargosExtra] = useState([]);
+  const [nuevoCargo, setNuevoCargo] = useState({ descripcion: '', precio: '', cantidad: 1 });
+  const [personasInput, setPersonasInput] = useState('');
+  const [totales, setTotales] = useState(null);
 
-  useEffect(() => { fetchHabitacionesOcupadas(); }, []);
-  useEffect(() => { if (seleccionada) calcular(); }, [seleccionada, extras]);
+  useEffect(() => { fetchHabitacionesOcupadas(); }, []);
+  
+  useEffect(() => { if (seleccionada) calcular(); }, [seleccionada, cargosExtra, fechaSalidaCalculo]);
 
-  const fetchHabitacionesOcupadas = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/habitaciones`);
-      if (res.data.success) {
-        // Filtramos solo las que están en estado 2 (Ocupadas)
-        setHabitacionesOcupadas(res.data.data.filter(h => h.Est_Hab === 2));
-      }
-    } catch (error) { console.error(error); }
-  };
+  const fetchHabitacionesOcupadas = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/habitaciones`);
+      if (res.data.success) {
+        setHabitacionesOcupadas(res.data.data.filter(h => h.Est_Hab === 2 && h.Pagado_NoPagado != 1));
+      }
+    } catch (error) { console.error(error); }
+  };
 
-  const calcular = () => {
-    if (!seleccionada) return;
-    const precioBase = parseFloat(seleccionada.Precio_Hab);
-    const inicio = new Date(seleccionada.Fec_Ini_Res);
-    const hoy = new Date();
-    const dif = hoy - inicio;
-    let dias = Math.ceil(dif / (1000 * 3600 * 24));
-    if (dias < 1) dias = 1;
+  const agregarPersonas = () => {
+    const cant = parseInt(personasInput);
+    if (!cant || cant < 1) return alert("Ingrese una cantidad válida de personas.");
 
-    const subHospedaje = precioBase * dias;
-    const subExtras = (extras.personas * 400) * dias; 
-    const subDesayuno = extras.desayuno ? (150 * dias) : 0;
+    setCargosExtra([
+        ...cargosExtra,
+        {
+            descripcion: 'Persona Extra',
+            precio: 400.00, 
+            cantidad: cant
+        }
+    ]);
+    setPersonasInput(''); 
+  };
 
-    const subtotal = subHospedaje + subExtras + subDesayuno;
-    const isv = subtotal * 0.15;     // 15% Impuesto
-    const turismo = subtotal * 0.04; // 4% Turismo
-    const total = subtotal + isv + turismo;
+  const agregarCargo = () => {
+    if (!nuevoCargo.descripcion || !nuevoCargo.precio || !nuevoCargo.cantidad) return alert("Complete todos los campos");
+    
+    setCargosExtra([
+        ...cargosExtra, 
+        { 
+            ...nuevoCargo, 
+            precio: parseFloat(nuevoCargo.precio),
+            cantidad: parseInt(nuevoCargo.cantidad)
+        }
+    ]);
+    setNuevoCargo({ descripcion: '', precio: '', cantidad: 1 });
+  };
 
-    setTotales({ dias, subHospedaje, subExtras, subDesayuno, subtotal, isv, turismo, total });
-  };
+  const eliminarCargo = (index) => {
+    const nuevaLista = [...cargosExtra];
+    nuevaLista.splice(index, 1);
+    setCargosExtra(nuevaLista);
+  };
 
-  const handleCobrar = async () => {
-    if(!seleccionada || !totales) return;
-    if(!window.confirm("¿Confirmar cobro y emisión de factura final?")) return;
+  const handleEliminarReserva = async () => {
+    if(!seleccionada) return;
+    if(!window.confirm(`¿⚠️ ESTÁ SEGURO? \nEsto eliminará la reserva de la Habitación ${seleccionada.Cod_Hab} y la pondrá DISPONIBLE. \nEsta acción no se puede deshacer.`)) return;
 
-    try {
-      await axios.post(`${API_URL}/facturar`, {
-        Cod_Res: seleccionada.Cod_Res,
-        Cod_Hab: seleccionada.Cod_Hab,
-        Cod_Cli: seleccionada.Cod_Cli,
-        Total_Pagar: totales.total.toFixed(2),
-        EstadiaDias: totales.dias,
-        TipoPago: metodoPago, 
-        Cod_Usu: CODIGO_USUARIO_ACTIVO // <-- Esto se envía a la DB
-      });
-      alert('✅ Factura Generada y Habitación Liberada');
-      setSeleccionada(null);
-      setTotales(null);
-      fetchHabitacionesOcupadas();
-    } catch (error) { 
-        alert('Error al facturar: ' + (error.response?.data?.message || error.message)); 
-    }
-  };
+    try {
+      await axios.delete(`${API_URL}/reservas/${seleccionada.Cod_Res}`);
+      alert('Reserva eliminada correctamente.');
+      setSeleccionada(null);
+      setTotales(null);
+      setCargosExtra([]);
+      fetchHabitacionesOcupadas();
+    } catch (error) {
+      alert('Error al eliminar reserva: ' + (error.response?.data?.message || error.message));
+    }
+  };
 
-  return (
-    <div className="pms-billing-container">
-      
-      {/* SIDEBAR: SELECCIÓN Y EXTRAS */}
-      <div className="billing-controls">
-        <div className="control-section">
-          <h3><FaSearch /> Buscar Reserva Activa</h3>
-          <select className="pms-select" onChange={(e) => {
-             const hab = habitacionesOcupadas.find(h => h.Cod_Hab == e.target.value);
-             setSeleccionada(hab); setExtras({ personas: 0, desayuno: false });
-          }}>
-            <option value="">-- Seleccione Habitación --</option>
-            {habitacionesOcupadas.map(h => (
-              <option key={h.Cod_Hab} value={h.Cod_Hab}>
-                HAB {h.Cod_Hab} - {h.Nom_Cli}
-              </option>
-            ))}
-          </select>
-        </div>
+  const calcular = () => {
+    if (!seleccionada) return;
 
-        {seleccionada && (
-          <div className="control-section fade-in">
-            <h3><FaConciergeBell /> Cargos Adicionales</h3>
-            <div className="extra-item">
-              <label>Personas Extra (L.400)</label>
-              <input type="number" min="0" value={extras.personas} onChange={e=>setExtras({...extras, personas: e.target.value})} />
-            </div>
-            <div className="extra-item">
-              <label>Desayuno (L.150)</label>
-              <input type="checkbox" checked={extras.desayuno} onChange={e=>setExtras({...extras, desayuno: e.target.checked})} />
-            </div>
-            
-            <h3 style={{marginTop: '20px'}}><FaCreditCard /> Método de Pago</h3>
-            <div className="payment-methods">
-                <button className={`method-btn ${metodoPago===1 ? 'active':''}`} onClick={()=>setMetodoPago(1)}>
-                    <FaMoneyBillAlt /> Efectivo
-                </button>
-                <button className={`method-btn ${metodoPago===0 ? 'active':''}`} onClick={()=>setMetodoPago(0)}>
-                    <FaCreditCard /> Tarjeta
-                </button>
-            </div>
-          </div>
-        )}
-      </div>
+    const precioBase = parseFloat(seleccionada.Precio_Unitario || seleccionada.Precio_Hab);
+    
+    const inicio = new Date(seleccionada.Fec_Ini_Res); 
+    const fin = new Date(seleccionada.Fec_Fin_Res); 
 
-      {/* VISTA PREVIA DE FACTURA (ESTILO PAPEL) */}
-      <div className="invoice-preview">
-        {totales ? (
-            <div className="paper-invoice">
-                <div className="inv-header">
-                    {/* Puedes poner un logo real aquí si tienes la URL */}
-                    <div className="inv-logo-box">HC</div> 
-                    <div className="inv-company-info">
-                        <h2>HOTEL CLEMENTINA</h2>
-                        <p>RTN: HN-DANLI-001</p>
-                        <p>Danlí, El Paraíso, Honduras</p>
-                        <p>Tel: 2763-5007 | hotelclementina@yahoo.com</p>
-                    </div>
-                </div>
+    inicio.setHours(0, 0, 0, 0);
+    fin.setHours(0, 0, 0, 0);
 
-                <div className="inv-meta">
-                    <div>
-                        <strong>CLIENTE:</strong> {seleccionada.Nom_Cli}<br/>
-                        <strong>CODIGO:</strong> {seleccionada.Cod_Cli}<br/>
-                    </div>
-                    <div style={{textAlign:'right'}}>
-                        <strong>FACTURA Nº:</strong> {Math.floor(Date.now()/1000)}<br/>
-                        <strong>FECHA:</strong> {new Date().toLocaleDateString()}<br/>
-                        <strong>FACTURADO POR:</strong> {NOMBRE_USUARIO_ACTIVO} <br/> {/* <-- CAMBIO: Muestra el Nom_Usu */}
-                        <strong>HABITACIÓN:</strong> {seleccionada.Cod_Hab} ({seleccionada.Tipo_Hab})
-                    </div>
-                </div>
+    if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) return;
 
-                <table className="inv-table">
-                    <thead>
-                        <tr>
-                            <th>DESCRIPCIÓN</th>
-                            <th>CANT.</th>
-                            <th>PRECIO UNIT.</th>
-                            <th>TOTAL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Hospedaje ({seleccionada.Tipo_Hab})</td>
-                            <td>{totales.dias}</td>
-                            <td>L. {parseFloat(seleccionada.Precio_Hab).toFixed(2)}</td>
-                            <td>L. {totales.subHospedaje.toFixed(2)}</td>
-                        </tr>
-                        {extras.personas > 0 && (
-                            <tr>
-                                <td>Recargo Persona Extra</td>
-                                <td>{extras.personas * totales.dias}</td>
-                                <td>L. 400.00</td>
-                                <td>L. {totales.subExtras.toFixed(2)}</td>
-                            </tr>
-                        )}
-                        {extras.desayuno && (
-                            <tr>
-                                <td>Servicio de Desayuno</td>
-                                <td>{totales.dias}</td>
-                                <td>L. 150.00</td>
-                                <td>L. {totales.subDesayuno.toFixed(2)}</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+    const diffTime = fin - inicio;
+    let dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    if (dias < 1) dias = 1; 
 
-                <div className="inv-footer">
-                    <div className="inv-totals">
-                        <div className="total-row"><span>Subtotal:</span> <span>L. {totales.subtotal.toFixed(2)}</span></div>
-                        <div className="total-row"><span>I.S.V. (15%):</span> <span>L. {totales.isv.toFixed(2)}</span></div>
-                        <div className="total-row"><span>Turismo (4%):</span> <span>L. {totales.turismo.toFixed(2)}</span></div>
-                        <div className="total-row grand-total"><span>TOTAL A PAGAR:</span> <span>L. {totales.total.toFixed(2)}</span></div>
-                    </div>
-                </div>
+    const subHospedaje = precioBase * dias;
+    const totalExtras = cargosExtra.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
 
-                <button className="print-btn" onClick={handleCobrar}>
-                    <FaPrint /> CONFIRMAR Y FACTURAR
-                </button>
-            </div>
-        ) : (
-            <div className="empty-state">
-                <FaPrint size={50} color="#ccc"/>
-                <p>Seleccione una habitación para generar la pre-factura.</p>
-            </div>
-        )}
-      </div>
-    </div>
-  );
+    const subtotal = subHospedaje + totalExtras;
+    const isv = subtotal * 0.15;     
+    const turismo = subtotal * 0.04; 
+    const total = subtotal + isv + turismo;
+
+    setTotales({ dias, subHospedaje, totalExtras, subtotal, isv, turismo, total });
+  };
+
+  const handleCobrar = async () => {
+    if(!seleccionada || !totales) return;
+    if(!window.confirm("¿Confirmar cobro y emisión de factura final?")) return;
+
+    try {
+      await axios.post(`${API_URL}/facturar`, {
+        Cod_Res: seleccionada.Cod_Res, 
+        Cod_Hab: seleccionada.Cod_Hab,
+        Cod_Cli: seleccionada.Cod_Cli,
+        Total_Pagar: totales.total.toFixed(2),
+        EstadiaDias: totales.dias, 
+        TipoPago: metodoPago, 
+        Cod_Usu: CODIGO_USUARIO_ACTIVO,
+        Fecha_Salida_Real: fechaSalidaCalculo,
+        Extras: cargosExtra 
+      });
+      alert('✅ Factura Generada y Reserva Cerrada.');
+      setSeleccionada(null);
+      setTotales(null);
+      setCargosExtra([]);
+      fetchHabitacionesOcupadas(); 
+    } catch (error) { 
+        alert('Error al facturar: ' + (error.response?.data?.message || error.message)); 
+    }
+  };
+
+  return (
+    <div className="pms-billing-container fade-in">
+      
+      <div className="billing-controls">
+        <div className="control-section">
+          <h3><FaSearch /> Buscar Reserva Activa</h3>
+          <select className="pms-select" onChange={(e) => {
+             const hab = habitacionesOcupadas.find(h => h.Cod_Hab == e.target.value);
+             setSeleccionada(hab); 
+             
+             const hoy = new Date();
+             const fechaHoy = hoy.toISOString().split('T')[0];
+             setFechaSalidaCalculo(fechaHoy);
+             setCargosExtra([]); 
+          }}>
+            <option value="">-- Seleccione Habitación --</option>
+            {habitacionesOcupadas.map(h => (
+              <option key={h.Cod_Hab} value={h.Cod_Hab}>
+                HAB {h.Cod_Hab} - {h.Nom_Cli}
+              </option>
+            ))}
+          </select>
+
+            {seleccionada && (
+                <button className="btn-eliminar-reserva" onClick={handleEliminarReserva}>
+                    <FaTrash /> Eliminar Reserva / Cancelar
+                </button>
+            )}
+        </div>
+
+        {seleccionada && (
+          <div className="control-section fade-in">
+            
+            <h3><FaUserFriends /> Personas Extra (L. 400)</h3>
+            <div className="add-cargo-form">
+                <input 
+                    type="text" 
+                    value="Recargo Persona Extra" 
+                    disabled 
+                    className="input-desc"
+                    style={{backgroundColor: '#f0f0f0', color: '#555'}}
+                />
+                <input 
+                    type="number" 
+                    min="1"
+                    placeholder="Cant." 
+                    value={personasInput}
+                    onChange={e => setPersonasInput(e.target.value)}
+                    className="input-cant"
+                />
+                <button className="btn-add-cargo" onClick={agregarPersonas}>
+                    <FaPlus />
+                </button>
+            </div>
+            
+            <hr style={{border: '0', borderTop: '1px solid #eee', margin: '20px 0'}} />
+
+            <h3><FaConciergeBell /> Otros Cargos (Comida, etc.)</h3>
+            
+            <div className="add-cargo-form">
+                <input 
+                    type="text" 
+                    placeholder="Descripción (ej. Cena)" 
+                    value={nuevoCargo.descripcion}
+                    onChange={e => setNuevoCargo({...nuevoCargo, descripcion: e.target.value})}
+                    className="input-desc"
+                />
+                <input 
+                    type="number" 
+                    min="1"
+                    placeholder="Cant." 
+                    value={nuevoCargo.cantidad}
+                    onChange={e => setNuevoCargo({...nuevoCargo, cantidad: e.target.value})}
+                    className="input-cant"
+                />
+                <input 
+                    type="number" 
+                    placeholder="Precio Unit." 
+                    value={nuevoCargo.precio}
+                    onChange={e => setNuevoCargo({...nuevoCargo, precio: e.target.value})}
+                    className="input-precio"
+                />
+                <button className="btn-add-cargo" onClick={agregarCargo}>
+                    <FaPlus />
+                </button>
+            </div>
+
+            <div className="lista-cargos">
+                {cargosExtra.map((cargo, idx) => (
+                    <div key={idx} className="cargo-item-row">
+                        <div style={{flex: 1}}>
+                            <strong>{cargo.cantidad}x</strong> {cargo.descripcion}
+                        </div>
+                        <span>L. {(cargo.precio * cargo.cantidad).toFixed(2)}</span>
+                        <button className="btn-remove-cargo" onClick={() => eliminarCargo(idx)}>
+                            <FaTrash size={12}/>
+                        </button>
+                    </div>
+                ))}
+                {cargosExtra.length === 0 && <p className="no-cargos">Sin cargos extra.</p>}
+            </div>
+            
+            <h3 style={{marginTop: '20px'}}><FaCreditCard /> Método de Pago</h3>
+            <div className="payment-methods">
+                <button className={`method-btn ${metodoPago===1 ? 'active':''}`} onClick={()=>setMetodoPago(1)}>
+                    <FaMoneyBillAlt size={20}/> Efectivo
+                </button>
+                <button className={`method-btn ${metodoPago===0 ? 'active':''}`} onClick={()=>setMetodoPago(0)}>
+                    <FaCreditCard size={20}/> Tarjeta
+                </button>
+            </div>
+          </div>
+        )}
+        
+      </div>
+
+      <div className="invoice-preview">
+        {totales ? (
+            <div className="paper-invoice">
+                <div className="inv-header">
+                    <div className="inv-logo-box">
+                        <img src={logoHotel} alt="Logo Hotel Clementina" className="inv-logo-img" />
+                    </div> 
+                    <div className="inv-company-info">
+                        <h2>HOTEL CLEMENTINA</h2>
+                        <p>RTN: HN-DANLI-001</p>
+                        <p>Danlí, El Paraíso, Honduras</p>
+                        <p>Tel: 2763-5007 | hotelclementina@yahoo.com</p>
+                    </div>
+                </div>
+
+                <div className="inv-meta">
+                    <div>
+                        <strong>CLIENTE:</strong> {seleccionada.Nom_Cli}<br/>
+                        <strong>CODIGO:</strong> {seleccionada.Cod_Cli}<br/>
+                    </div>
+                    <div style={{textAlign:'right'}}>
+                        <strong>FACTURA Nº:</strong> {Math.floor(Date.now()/1000)}<br/>
+                        <strong>FECHA:</strong> {new Date().toLocaleDateString()}<br/>
+                        <strong>FACTURADO POR:</strong> {NOMBRE_USUARIO_ACTIVO} <br/>
+                        <strong>HABITACIÓN:</strong> {seleccionada.Cod_Hab}
+                    </div>
+                </div>
+
+                <table className="inv-table">
+                    <thead>
+                        <tr>
+                            <th>DESCRIPCIÓN</th>
+                            <th>CANT.</th>
+                            <th>PRECIO UNIT.</th>
+                            <th>TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Hospedaje (Hab. {seleccionada.Cod_Hab})</td>
+                            <td>{totales.dias}</td>
+                            <td>L. {parseFloat(seleccionada.Precio_Unitario || seleccionada.Precio_Hab).toFixed(2)}</td>
+                            <td>L. {totales.subHospedaje.toFixed(2)}</td>
+                        </tr>
+                        
+                        {cargosExtra.map((cargo, idx) => (
+                            <tr key={idx}>
+                                <td>{cargo.descripcion} (Extra)</td>
+                                <td>{cargo.cantidad}</td>
+                                <td>L. {cargo.precio.toFixed(2)}</td>
+                                <td>L. {(cargo.precio * cargo.cantidad).toFixed(2)}</td>
+                            </tr>
+                        ))}
+
+                    </tbody>
+                </table>
+
+                <div className="inv-footer">
+                    <div className="inv-totals">
+                        <div className="total-row"><span>Subtotal:</span> <span>L. {totales.subtotal.toFixed(2)}</span></div>
+                        <div className="total-row"><span>I.S.V. (15%):</span> <span>L. {totales.isv.toFixed(2)}</span></div>
+                        <div className="total-row"><span>Turismo (4%):</span> <span>L. {totales.turismo.toFixed(2)}</span></div>
+                        
+                        <div className="total-row grand-total">
+                            <span>TOTAL A PAGAR:</span> 
+                            <span>L. {totales.total.toFixed(2)}</span>
+                        </div>
+                </div>
+                </div>
+
+                <button className="print-btn" onClick={handleCobrar}>
+                    <FaPrint /> CONFIRMAR Y FACTURAR
+                </button>
+            </div>
+        ) : (
+            <div className="empty-state">
+                <FaPrint size={50} color="#ccc"/>
+                <p>Seleccione una habitación para generar la pre-factura.</p>
+            </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default Facturacion;
