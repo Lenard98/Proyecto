@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Facturacion.css'; 
-import { FaSearch, FaPrint, FaCreditCard, FaMoneyBillAlt, FaConciergeBell, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaSearch, FaPrint, FaCreditCard, FaMoneyBillAlt, FaConciergeBell, FaTrash, FaPlus, FaUserFriends } from 'react-icons/fa';
 
 // --- IMPORTACIÓN CORRECTA DEL LOGO ---
 import logoHotel from '../assets/LogoHotel.jpg';
@@ -28,6 +28,9 @@ const Facturacion = () => {
   const [cargosExtra, setCargosExtra] = useState([]);
   const [nuevoCargo, setNuevoCargo] = useState({ descripcion: '', precio: '', cantidad: 1 });
   
+  // --- NUEVO ESTADO: Input para personas extra ---
+  const [personasInput, setPersonasInput] = useState('');
+
   const [totales, setTotales] = useState(null);
 
   useEffect(() => { fetchHabitacionesOcupadas(); }, []);
@@ -42,6 +45,23 @@ const Facturacion = () => {
         setHabitacionesOcupadas(res.data.data.filter(h => h.Est_Hab === 2 && h.Pagado_NoPagado != 1));
       }
     } catch (error) { console.error(error); }
+  };
+
+  // --- NUEVA FUNCIÓN: AGREGAR PERSONAS EXTRA (PRECIO FIJO 400) ---
+  const agregarPersonas = () => {
+    const cant = parseInt(personasInput);
+    if (!cant || cant < 1) return alert("Ingrese una cantidad válida de personas.");
+
+    // Agregamos a la lista de cargos existente para que se procese igual que los demás
+    setCargosExtra([
+        ...cargosExtra,
+        {
+            descripcion: 'Persona Extra',
+            precio: 400.00, // Precio fijo solicitado
+            cantidad: cant
+        }
+    ]);
+    setPersonasInput(''); // Limpiar input
   };
 
   const agregarCargo = () => {
@@ -99,7 +119,7 @@ const Facturacion = () => {
 
     const subHospedaje = precioBase * dias;
     
-    // Sumar cargos manuales
+    // Sumar cargos manuales (Incluye las personas extra)
     const totalExtras = cargosExtra.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
 
     const subtotal = subHospedaje + totalExtras;
@@ -124,7 +144,7 @@ const Facturacion = () => {
         TipoPago: metodoPago, 
         Cod_Usu: CODIGO_USUARIO_ACTIVO,
         Fecha_Salida_Real: fechaSalidaCalculo,
-        // --- AQUÍ ENVIAMOS LOS CARGOS PARA GUARDAR EN TABLA RECARGOS ---
+        // --- AQUÍ ENVIAMOS LOS CARGOS (PERSONAS Y MANUALES) ---
         Extras: cargosExtra 
       });
       alert('✅ Factura Generada y Reserva Cerrada.');
@@ -171,7 +191,32 @@ const Facturacion = () => {
         {seleccionada && (
           <div className="control-section fade-in">
             
-            <h3><FaConciergeBell /> Agregar Cargos Extra</h3>
+            {/* --- SECCIÓN NUEVA: PERSONAS EXTRA --- */}
+            <h3><FaUserFriends /> Personas Extra (L. 400)</h3>
+            <div className="add-cargo-form">
+                <input 
+                    type="text" 
+                    value="Recargo Persona Extra" 
+                    disabled 
+                    className="input-desc"
+                    style={{backgroundColor: '#f0f0f0', color: '#555'}}
+                />
+                <input 
+                    type="number" 
+                    min="1"
+                    placeholder="Cant." 
+                    value={personasInput}
+                    onChange={e => setPersonasInput(e.target.value)}
+                    className="input-cant"
+                />
+                <button className="btn-add-cargo" onClick={agregarPersonas}>
+                    <FaPlus />
+                </button>
+            </div>
+            
+            <hr style={{border: '0', borderTop: '1px solid #eee', margin: '20px 0'}} />
+
+            <h3><FaConciergeBell /> Otros Cargos (Comida, etc.)</h3>
             
             <div className="add-cargo-form">
                 <input 
