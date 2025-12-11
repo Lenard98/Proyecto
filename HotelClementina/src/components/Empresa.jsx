@@ -4,7 +4,6 @@ import './Empresa.css';
 
 const API_URL = 'http://localhost:3002/api';
 
-// --- NUEVO COMPONENTE: Lista de Clientes de la Empresa (Sin cambios) ---
 const ClientesList = ({ codEmp, empresaName, handleClose }) => {
     const [clientes, setClientes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -15,7 +14,6 @@ const ClientesList = ({ codEmp, empresaName, handleClose }) => {
             setIsLoading(true);
             setError(null);
             try {
-                // Llama al nuevo endpoint: /api/empresa/clientes/:codEmp
                 const res = await axios.get(`${API_URL}/empresa/clientes/${codEmp}`);
                 if (res.data.success) {
                     setClientes(res.data.data);
@@ -85,9 +83,7 @@ const ClientesList = ({ codEmp, empresaName, handleClose }) => {
     );
 };
 ClientesList.displayName = 'ClientesList';
-// ------------------------------------------------------------------
 
-// --- COMPONENTE: Tabla de Historial de Empresas (MODIFICADO) ---
 const EmpresaHistoryTable = memo(({ history, editingEmpresa, handleEdit, handleDelete, handleSave, handleCancelEdit, handleEmpresaChange, handleShowClients, isClientsModalOpen }) => {
     if (history.length === 0) {
         return <p>No hay empresas registradas en el historial.</p>;
@@ -95,12 +91,9 @@ const EmpresaHistoryTable = memo(({ history, editingEmpresa, handleEdit, handleD
 
     const isEditing = (codEmp) => editingEmpresa && editingEmpresa.Cod_Emp === codEmp;
 
-    // Función auxiliar para renderizar el campo como input o texto
     const renderCell = (empresa, field) => {
         const value = empresa[field] || '';
-        
-        // Determina si el campo debe estar deshabilitado o no
-        const isDisabled = false; // Eliminamos la restricción para Cod_Emp y Nom_Emp ya que ambos son editables
+        const isDisabled = false; 
 
         return isEditing(empresa.Cod_Emp) ? (
             <input
@@ -109,7 +102,7 @@ const EmpresaHistoryTable = memo(({ history, editingEmpresa, handleEdit, handleD
                 value={editingEmpresa[field] || ''}
                 onChange={(e) => handleEmpresaChange(e, empresa.Cod_Emp)}
                 disabled={isDisabled} 
-                required={field === 'Cod_Emp' || field === 'Nom_Emp'} // Ambos son requeridos
+                required={field === 'Cod_Emp' || field === 'Nom_Emp'}
                 className="table-input"
             />
         ) : (
@@ -130,7 +123,6 @@ const EmpresaHistoryTable = memo(({ history, editingEmpresa, handleEdit, handleD
                 <tbody>
                     {history.map((empresa) => (
                         <tr key={empresa.Cod_Emp} className={isEditing(empresa.Cod_Emp) ? 'editing-row' : ''}>
-                            {/* RTN es ahora editable */}
                             <td data-label="RTN">{renderCell(empresa, 'Cod_Emp')}</td> 
                             <td data-label="Nombre">{renderCell(empresa, 'Nom_Emp')}</td>
                             <td data-label="Acciones" className="action-cell">
@@ -138,7 +130,6 @@ const EmpresaHistoryTable = memo(({ history, editingEmpresa, handleEdit, handleD
                                     <>
                                         <button 
                                             className="btn-save" 
-                                            // Se asegura que ambos campos no estén vacíos antes de guardar
                                             onClick={() => handleSave(editingEmpresa)} 
                                             disabled={!editingEmpresa.Nom_Emp || !editingEmpresa.Cod_Emp || isClientsModalOpen} 
                                             title="Guardar cambios"
@@ -192,7 +183,6 @@ const EmpresaHistoryTable = memo(({ history, editingEmpresa, handleEdit, handleD
 });
 EmpresaHistoryTable.displayName = 'EmpresaHistoryTable';
 
-// --- COMPONENTE PRINCIPAL (Ajustado en handleSave) ---
 function EmpresaForm() {
     const [formData, setFormData] = useState({ Cod_Emp: '', Nom_Emp: '' });
     const [message, setMessage] = useState('');
@@ -236,42 +226,42 @@ function EmpresaForm() {
     }, []);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         if (isClientsModalOpen) return;
         setIsSaving(true);
         displayMessage('Guardando empresa...');
-        
-        const dataToSend = { Cod_Emp: formData.Cod_Emp, Nom_Emp: formData.Nom_Emp };
-        const apiUrl = 'http://localhost:3002/api/empresa'; 
+        
+        const dataToSend = { Cod_Emp: formData.Cod_Emp, Nom_Emp: formData.Nom_Emp };
+        const apiUrl = 'http://localhost:3002/api/empresa'; 
 
-        try {
-            const response = await fetch(apiUrl, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataToSend), 
-            });
+        try {
+            const response = await fetch(apiUrl, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSend), 
+            });
 
-            const responseData = await response.json();
+            const responseData = await response.json();
 
-            if (response.ok && responseData.success) {
-                displayMessage('✅ ¡Empresa guardada exitosamente!');
-                setFormData({ Cod_Emp: '', Nom_Emp: '' });
+            if (response.ok && responseData.success) {
+                displayMessage('✅ ¡Empresa guardada exitosamente!');
+                setFormData({ Cod_Emp: '', Nom_Emp: '' });
                 fetchEmpresaHistory();
-            } else {
-                displayMessage(`❌ Error al guardar empresa: ${responseData.message || response.statusText}`);
-            }
-        } catch (error) {
-            console.error('Error de conexión:', error);
-            displayMessage('❌ Error: No se pudo conectar con el servidor backend.');
-        } finally {
+            } else {
+                displayMessage(`❌ Error al guardar empresa: ${responseData.message || response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            displayMessage('❌ Error: No se pudo conectar con el servidor backend.');
+        } finally {
             setIsSaving(false);
         }
-    };
+    };
     
     const handleEdit = (empresa) => {
         if (isClientsModalOpen) return;
@@ -286,9 +276,7 @@ function EmpresaForm() {
         }
     };
 
-    // FUNCIÓN DE GUARDADO AJUSTADA para validar el RTN/Cod_Emp
     const handleSave = async (empresaToSave) => {
-        // Validación: Ambos campos deben existir
         if (!empresaToSave.Nom_Emp || !empresaToSave.Cod_Emp || isClientsModalOpen) {
              displayMessage('❌ El RTN (Código) y el Nombre son requeridos para guardar.');
              return;
@@ -298,8 +286,6 @@ function EmpresaForm() {
         displayMessage('Actualizando empresa...');
         
         try {
-            // Se envía el Cod_Emp antiguo en la URL y los datos actualizados en el cuerpo.
-            // NOTA: Si se cambió el Cod_Emp, el backend debe manejar la actualización de la clave primaria.
             const response = await axios.put(`${API_URL}/empresa/${editingEmpresa.Cod_Emp}`, empresaToSave);
 
             if (response.data.success) {
@@ -358,14 +344,13 @@ function EmpresaForm() {
     };
 
 
-    return (
-        <div className="empresa-page-wrapper">
+    return (
+        <div className="empresa-page-wrapper">
             
-            {/* 1. SECCIÓN DE REGISTRO */}
-            <div className="empresa-form-container">
-                <header className="form-header">
-                    <h2>Gestión de Empresas</h2>
-                </header>
+            <div className="empresa-form-container">
+                <header className="form-header">
+                    <h2>Gestión de Empresas</h2>
+                </header>
                 
                 {message && (
                     <p className={message.startsWith('✅') ? 'message-success' : 'message-error'}>
@@ -373,34 +358,33 @@ function EmpresaForm() {
                     </p>
                 )}
 
-                <form onSubmit={handleSubmit} className="empresa-form">
-                    
-                    <fieldset className="form-section" disabled={!!editingEmpresa || isSaving || isClientsModalOpen}>
-                        <legend>Datos de la Empresa</legend>
-                        <div className="form-grid">
-                            <div className="form-group">
-                                <label htmlFor="Cod_Emp">RTN (Código Empresa)</label>
-                                <input type="text" id="Cod_Emp" name="Cod_Emp" value={formData.Cod_Emp} onChange={handleChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="Nom_Emp">Nombre de la Empresa</label>
-                                <input type="text" id="Nom_Emp" name="Nom_Emp" value={formData.Nom_Emp} onChange={handleChange} required />
-                            </div>
-                        </div>
-                    </fieldset>
-                    
-                    <div className="form-actions">
-                        <button type="button" className="btn-secondary" disabled={!!editingEmpresa || isSaving || isClientsModalOpen}>Cancelar</button>
-                        <button type="submit" className="btn-primary" disabled={!!editingEmpresa || isSaving || isClientsModalOpen}>
+                <form onSubmit={handleSubmit} className="empresa-form">
+                    
+                    <fieldset className="form-section" disabled={!!editingEmpresa || isSaving || isClientsModalOpen}>
+                        <legend>Datos de la Empresa</legend>
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label htmlFor="Cod_Emp">RTN (Código Empresa)</label>
+                                <input type="text" id="Cod_Emp" name="Cod_Emp" value={formData.Cod_Emp} onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="Nom_Emp">Nombre de la Empresa</label>
+                                <input type="text" id="Nom_Emp" name="Nom_Emp" value={formData.Nom_Emp} onChange={handleChange} required />
+                            </div>
+                        </div>
+                    </fieldset>
+                    
+                    <div className="form-actions">
+                        <button type="button" className="btn-secondary" disabled={!!editingEmpresa || isSaving || isClientsModalOpen}>Cancelar</button>
+                        <button type="submit" className="btn-primary" disabled={!!editingEmpresa || isSaving || isClientsModalOpen}>
                             {isSaving ? 'Guardando...' : 'Guardar Empresa'}
                         </button>
-                    </div>
-                </form>
-            </div>
+                    </div>
+                </form>
+            </div>
             
             <hr className="separator"/>
 
-            {/* 2. SECCIÓN: HISTORIAL DE EMPRESAS */}
             <div className="empresa-history-section">
                 <header className="form-header">
                     <h2>Historial de Empresas Registradas</h2>
@@ -423,7 +407,6 @@ function EmpresaForm() {
                 )}
             </div>
 
-            {/* 3. MODAL DE CLIENTES */}
             {isClientsModalOpen && (
                 <ClientesList 
                     codEmp={selectedEmpresaCod}
@@ -431,8 +414,8 @@ function EmpresaForm() {
                     handleClose={handleCloseClients}
                 />
             )}
-        </div>
-    );
+        </div>
+    );
 }
 
 export default EmpresaForm;

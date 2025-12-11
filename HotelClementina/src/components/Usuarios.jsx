@@ -4,7 +4,6 @@ import './Usuarios.css';
 
 const API_URL = 'http://localhost:3002/api';
 
-// --- Constantes de Roles (Ajusta esto si usas una tabla de Roles en la BD) ---
 const ROLES = [
     { id: 1, name: 'Administrador' },
     { id: 2, name: 'Recepcionista' },
@@ -12,7 +11,6 @@ const ROLES = [
     { id: 4, name: 'Gerente' }  
 ];
 
-// --- COMPONENTE: Tabla de Historial de Usuarios ---
 const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleDelete, handleSave, handleCancelEdit }) => {
     if (history.length === 0) {
         return <p>No hay usuarios registrados en el historial.</p>;
@@ -20,14 +18,11 @@ const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleD
 
     const isEditing = (codUsu) => editingUsuario && editingUsuario.Cod_Usu === codUsu;
 
-    // Función auxiliar para renderizar el campo como input o texto
     const renderCell = (usuario, field) => {
         const value = usuario[field] || '';
-        
         const isCurrentlyEditing = isEditing(usuario.Cod_Usu);
         const isSelectField = field === 'Tipo_Usu' || field === 'Cod_Emp' || field === 'HabDes_Usu';
         
-        // Si estamos editando y es un campo de selección
         if (isCurrentlyEditing && isSelectField) {
              
             if (field === 'Tipo_Usu') {
@@ -60,13 +55,12 @@ const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleD
                     </select>
                 );
             }
-             // El Cod_Emp solo se muestra, no se permite cambiar
+             
              if (field === 'Cod_Emp') {
                 return <span>{usuario.Nom_Empleado}</span>; 
              }
         }
         
-        // Si no es un select y estamos editando, renderiza un input (Id_Usu, Contra_Usu)
         if (isCurrentlyEditing && (field === 'Id_Usu' || field === 'Contra_Usu')) {
              const inputValue = field === 'Contra_Usu' ? '' : editingUsuario[field] || '';
              
@@ -83,7 +77,6 @@ const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleD
              );
         }
 
-        // Renderizado normal
         if (field === 'HabDes_Usu') {
             return <span>{value == 1 ? '✅ Habilitado' : '❌ Deshabilitado'}</span>;
         }
@@ -164,9 +157,7 @@ const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleD
 });
 UsuarioHistoryTable.displayName = 'UsuarioHistoryTable';
 
-// --- COMPONENTE PRINCIPAL: UsuariosForm ---
 function UsuariosForm() {
-    const [showPassword, setShowPassword] = useState(false);
     const defaultFormData = { 
         Cod_Emp: '', 
         Nom_Usu: '', 
@@ -190,7 +181,6 @@ function UsuariosForm() {
         }, 5000); 
     };
 
-    // 1. Cargar Historial de Usuarios y Lista de Empleados
     const fetchDependencies = async () => {
         setIsLoadingHistory(true);
         try {
@@ -281,13 +271,11 @@ function UsuariosForm() {
         }
     };
     
-    // Función de ayuda para manejar los cambios en la edición
     const handleEdit = (usuario, field, value) => {
          if (field) {
             const newValue = ['Tipo_Usu', 'HabDes_Usu'].includes(field) ? parseInt(value) : value;
             setEditingUsuario(prev => ({ ...prev, [field]: newValue }));
         } else {
-            // Clonar el objeto para edición, asegurando que Nom_Empleado esté presente.
             const employeeName = empleados.find(e => e.Cod_Emp === usuario.Cod_Emp)?.Nom_Completo || usuario.Nom_Usu;
             setEditingUsuario({ ...usuario, Nom_Empleado: employeeName, Contra_Usu: '' }); 
             displayMessage('Modo edición activado. Guarde o cancele antes de continuar.');
@@ -380,7 +368,6 @@ function UsuariosForm() {
                         <legend>Registro de Nuevo Usuario</legend>
                         <div className="form-grid">
                             
-                            {/* Empleado */}
                             <div className="form-group">
                                 <label htmlFor="Cod_Emp">Empleado Asociado</label>
                                 <select 
@@ -399,7 +386,6 @@ function UsuariosForm() {
                                 </select>
                             </div>
                             
-                            {/* Rol */}
                             <div className="form-group">
                                 <label htmlFor="Tipo_Usu">Rol del Usuario</label>
                                 <select 
@@ -416,7 +402,6 @@ function UsuariosForm() {
                                 </select>
                             </div>
 
-                            {/* ID Usuario (Login) */}
                             <div className="form-group">
                                 <label htmlFor="Id_Usu">ID de Usuario (Login)</label>
                                 <input 
@@ -430,7 +415,6 @@ function UsuariosForm() {
                                 />
                             </div>
                             
-                            {/* Contraseña */}
                             <div className="form-group">
                                 <label htmlFor="Contra_Usu">Contraseña</label>
                                 <input 
@@ -445,7 +429,6 @@ function UsuariosForm() {
                                 />
                             </div>
                             
-                            {/* Estado (Habilitado/Deshabilitado) */}
                              <div className="form-group">
                                 <label htmlFor="HabDes_Usu">Estado</label>
                                 <select 
@@ -473,7 +456,6 @@ function UsuariosForm() {
             
             <hr className="separator"/>
 
-            {/* Historial */}
             <div className="usuarios-history-section">
                 <header className="form-header">
                     <h2>Historial de Usuarios Registrados</h2>

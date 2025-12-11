@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Habitaciones.css';
-
-// Íconos para el tablero y modal
 import { FaBed, FaBroom, FaTools, FaCheckCircle, FaUser, FaClock, FaMoneyBillWave } from 'react-icons/fa';
 
 const API_URL = 'http://localhost:3002/api';
 
-// Estados disponibles para el modal
 const estadosDisponibles = [
     { id: 1, nombre: 'DISPONIBLE', color: 'green', icono: <FaCheckCircle /> },
     { id: 2, nombre: 'OCUPADO', color: 'red', icono: <FaUser /> },
@@ -21,7 +18,6 @@ const Habitaciones = () => {
     const [selectedHabitacion, setSelectedHabitacion] = useState(null);
     const [estadoSeleccionadoId, setEstadoSeleccionadoId] = useState(null);
 
-    // Cargar habitaciones periódicamente
     const fetchHabitaciones = async () => {
         try {
             const res = await axios.get(`${API_URL}/habitaciones`);
@@ -64,9 +60,7 @@ const Habitaciones = () => {
 
             if (res.data.success) {
                 alert(`Estado de Habitación ${codHab} cambiado.`);
-
                 await fetchHabitaciones();
-
                 handleCloseModal();
             } else {
                 alert("Error al actualizar estado.");
@@ -77,9 +71,7 @@ const Habitaciones = () => {
         }
     };
 
-    // --- FUNCIÓN DE CÁLCULO ACTUALIZADA (Muestra noches y subtotal completos) ---
     const calcularEstadoActual = (hab) => {
-        // Solo calcula si el estado de la habitación es OCUPADO y tiene una reserva asociada
         if (hab.Est_Hab !== 2 || !hab.Cod_Res) return null; 
 
         const fechaInicio = new Date(hab.Fec_Ini_Res);
@@ -89,7 +81,6 @@ const Habitaciones = () => {
         const fechaFinRes = hab.Fec_Fin_Res ? new Date(hab.Fec_Fin_Res).toISOString().split('T')[0] : 'N/A';
         const isPagado = hab.Pagado_NoPagado == 1;
 
-        // Caso 1: Reserva Pagada/Cerrada
         if (isPagado) {
             return { 
                 dias: 0, 
@@ -99,28 +90,21 @@ const Habitaciones = () => {
             };
         }
 
-        // Caso 2: Reserva Activa (Mostrar noches totales y subtotal completo)
-        
-        // Cálculo de Días Totales de la Reserva (para mostrar 8 noches)
         fechaInicio.setHours(0, 0, 0, 0);
         fechaFinPactada.setHours(0, 0, 0, 0);
 
         const diffTime = fechaFinPactada - fechaInicio;
         let diasTotales = Math.max(1, Math.ceil(diffTime / (1000 * 3600 * 24)));
         
-        // Cálculo del Subtotal de la Reserva Completa (Precio * Días Totales)
         const subtotalReservaCompleta = diasTotales * precioPactado;
 
         return { 
-            // Muestra los días totales pactados (8 Noches)
             dias: diasTotales, 
-            // Muestra el subtotal completo de la reserva
             consumoTotal: subtotalReservaCompleta, 
             fechaFinRes, 
             isPagado: false 
         };
     };
-    // ----------------------------------------
 
     const getStatusConfig = (estado) => {
         switch (estado) {
@@ -155,8 +139,6 @@ const Habitaciones = () => {
                             <div className="hab-centro-libre">
                                 {hab.Est_Hab === 2 && info ? (
                                     <div className="hab-detalle-ocupada-v2">
-
-                                        {/* Muestra PAGADO si Pagado_NoPagado es 1 */}
                                         {info.isPagado ? (
                                             <>
                                                 <div className="detalle-row">
@@ -167,7 +149,6 @@ const Habitaciones = () => {
                                                 </small>
                                             </>
                                         ) : (
-                                            /* Si no está pagada → Muestra las noches y subtotal completos */
                                             <>
                                                 <div className="detalle-row">
                                                     <FaUser /> {hab.Nom_Cli || 'Cliente Desconocido'}
@@ -183,7 +164,6 @@ const Habitaciones = () => {
                                                 </small>
                                             </>
                                         )}
-
                                     </div>
                                 ) : (
                                     <>

@@ -1,10 +1,10 @@
-/* DISEÑO GENERAL PMS */
+/* Reservas.css*/
 .pms-container {
     max-width: 1200px; 
     margin: 30px auto; 
     padding: 0 20px; 
     font-family: 'Segoe UI', sans-serif;
-    background-color: #F4F4F4; /* Fondo general opcional si el body no lo tiene */
+    background-color: #F4F4F4; 
 }
 
 .pms-header {
@@ -12,12 +12,12 @@
     justify-content: space-between; 
     align-items: center; 
     margin-bottom: 30px;
-    border-bottom: 3px solid #D4AF37; /* Acento Dorado */
+    border-bottom: 3px solid #D4AF37; 
     padding-bottom: 15px;
 }
 
 .pms-header h2 { 
-    color: #111111; /* Negro Mate */
+    color: #111111; 
     margin: 0; 
     font-size: 1.8rem; 
     display: flex; 
@@ -27,7 +27,7 @@
 
 .pms-date-display { 
     font-size: 1.1rem; 
-    color: #333333; /* Texto Oscuro */
+    color: #333333; 
     font-weight: 600; 
     text-transform: capitalize; 
 }
@@ -48,8 +48,8 @@
 }
 
 .card-header { 
-    background: #111111; /* Negro Mate */
-    color: #FFFFFF; /* Texto Claro */
+    background: #111111; 
+    color: #FFFFFF; 
     padding: 15px 20px; 
 }
 
@@ -75,7 +75,7 @@
 .input-wrapper label { 
     display: block; 
     font-weight: 600; 
-    color: #333333; /* Texto Oscuro */
+    color: #333333; 
     margin-bottom: 8px; 
     font-size: 0.9rem; 
 }
@@ -90,15 +90,15 @@
     transition: all 0.2s;
 }
 
-/* Efecto Focus en Dorado */
+
 .input-icon:focus-within { 
-    border-color: #D4AF37; /* Dorado */
+    border-color: #D4AF37; 
     background: white; 
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); /* Sombra dorada suave */
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); 
 }
 
 .input-icon svg { 
-    color: #D4AF37; /* Iconos en Dorado */
+    color: #D4AF37; 
     margin-right: 10px; 
 }
 
@@ -114,14 +114,14 @@
 
 .full-width { width: 100%; }
 
-/* Select Grande estilizado */
+
 .big-select { 
     width: 100%; 
     padding: 12px; 
-    border: 2px solid #D4AF37; /* Borde Dorado */
+    border: 2px solid #D4AF37; 
     border-radius: 6px; 
     font-size: 1rem; 
-    background: #FFFEF9; /* Un blanco muy cálido o blanco puro */
+    background: #FFFEF9; 
     cursor: pointer; 
     color: #333333;
     outline: none;
@@ -142,7 +142,7 @@ textarea {
 /* CAJA DE ESTADÍA */
 .stay-duration-box { 
     background: #f8f9fa; 
-    border: 1px dashed #D4AF37; /* Borde punteado dorado */
+    border: 1px dashed #D4AF37; 
     padding: 15px; 
     border-radius: 8px; 
     display: flex; 
@@ -163,18 +163,18 @@ textarea {
     display: flex; 
     flex-direction: column; 
     line-height: 1.2; 
-    color: #111111; /* Negro para contraste */
+    color: #111111; 
 }
 
 .date-preview strong { 
     font-size: 1.2rem; 
-    color: #D4AF37; /* Texto fuerte en dorado */
+    color: #D4AF37; 
 }
 
 /* BOTÓN PRINCIPAL */
 .pms-btn-primary { 
-    background: #D4AF37; /* Fondo Dorado */
-    color: #FFFFFF; /* Texto Blanco */
+    background: #D4AF37; 
+    color: #FFFFFF; 
     border: none; 
     padding: 15px; 
     width: 100%; 
@@ -187,7 +187,7 @@ textarea {
 }
 
 .pms-btn-primary:hover { 
-    background: #C2A032; /* Dorado un poco más oscuro al pasar el mouse */
+    background: #C2A032; 
 }
 
 .pms-btn-primary:active {

@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; 
-
-// Importamos los íconos del ojo
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-
 import './LoginPage.css'; 
 import logoHotel from '../assets/LogoHotel.jpg';
 
@@ -51,7 +48,6 @@ function LoginPage() {
     <div className="login-page">
       <div className="login-container">
         
-        {/* Logo sin recortar */}
         <img src={logoHotel} alt="Logo Hotel Clementina" className="login-logo" />
 
         <h2>Inicio de Sesión</h2>

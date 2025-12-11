@@ -1,20 +1,20 @@
-// backend/server.js
+// server.js
 
-// 1. Importar dependencias
-require('dotenv').config(); // Carga las variables de .env
+//Importar dependencias
+require('dotenv').config(); 
 const express = require('express');
-const mysql = require('mysql2/promise'); // Usamos la versión con promesas
+const mysql = require('mysql2/promise'); 
 const cors = require('cors');
 
-// 2. Configuración inicial
+//Configuración inicial
 const app = express();
 const port = process.env.PORT || 3002;
 
-// 3. Middlewares
-app.use(cors()); // Permite peticiones de otros orígenes (tu frontend)
-app.use(express.json()); // Permite a Express entender JSON en el body
+// Middlewares
+app.use(cors()); 
+app.use(express.json()); 
 
-// 4. Configurar la conexión a la BD
+//Configurar la conexión a la BD
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -26,9 +26,7 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// ------------------------------------------------------------------
-// 5. Endpoint de Login (MODIFICADO para validar HabDes_Usu)
-// ------------------------------------------------------------------
+//Endpoint de Login
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -37,18 +35,18 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        // 1. Ejecutar el procedimiento almacenado de validación de credenciales
+        
         const [validationRows] = await pool.query('CALL ProUsuarios(?, ?)', [username, password]);
 
         if (validationRows[0] && validationRows[0].length > 0) {
             
-            // 2. Obtener los detalles del usuario
+            
             const [detailsRows] = await pool.query('CALL ProTipoUsuarios(?)', [username]);
 
             if (detailsRows[0] && detailsRows[0].length > 0) {
                 const user = detailsRows[0][0];
 
-                // 3. VERIFICACIÓN DE ESTADO DE HABILITACIÓN DEL USUARIO
+            
                 const [statusCheck] = await pool.query('SELECT HabDes_Usu FROM usuarios WHERE Id_Usu = ?', [username]);
 
                 if (statusCheck.length === 0) {
@@ -58,11 +56,11 @@ app.post('/api/login', async (req, res) => {
                 const userStatus = statusCheck[0].HabDes_Usu;
 
                 if (userStatus === 0) {
-                    // Si el estado es 0 (Deshabilitado), denegamos el acceso.
+
                     return res.status(403).json({ success: false, message: '❌ No puede acceder al sistema. Su cuenta está deshabilitada.' });
                 }
                 
-                // 4. Si está habilitado (status === 1), continuar con el login exitoso
+                
                 res.json({
                     success: true,
                     message: 'Login exitoso',
@@ -87,16 +85,12 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------------
-// 6. ENDPOINTS DE EMPLEADOS
-// ------------------------------------------------------------------
+// ENDPOINTS DE EMPLEADOS
 
-/**
- * Endpoint para obtener el Historial Completo de Empleados (GET /api/empleados) 
- */
+/*Endpoint para obtener el Historial Completo de Empleados*/
 app.get('/api/empleados', async (req, res) => {
     try {
-        // CORRECCIÓN: Eliminada la sangría excesiva
+        
         const sql = `
 SELECT 
 e.*, 
@@ -118,9 +112,7 @@ ORDER BY e.Cod_Emp DESC
 });
 
 
-/**
- * Endpoint para Registrar Empleados (POST) 
- */
+/*Endpoint para Registrar Empleados */
 app.post('/api/empleados', async (req, res) => {
     const {
         Nom_Emp, Ape_Emp, Fch_Nacim, Sex_Emp, Tel_Emp,
@@ -166,9 +158,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 });
 
 
-/**
- * Endpoint: Actualizar Empleado (PUT) - CORREGIDO para manejar campos NOT NULL.
- */
+/*Endpoint: Actualizar Empleado */
 app.put('/api/empleados/:codEmp', async (req, res) => {
     const { codEmp } = req.params;
     const {
@@ -177,12 +167,12 @@ app.put('/api/empleados/:codEmp', async (req, res) => {
         Seguro, HabDesEmp
     } = req.body;
 
-    // 1. VALIDACIÓN ESTRICTA (CRÍTICA)
+    // VALIDACIÓN ESTRICTA 
     if (!Nom_Emp || !Ape_Emp || !Cor_Emp || Sueldo_Emp === undefined || Cod_Cargo === undefined) {
         return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Nombre, Apellido, Correo, Sueldo y Cargo.' });
     }
 
-    // 2. NORMALIZACIÓN CRÍTICA: Convertir NULL/undefined a valores seguros.
+    //NORMALIZACIÓN CRÍTICA
     const normalizedDirEmp = Dir_Emp || '';
     const normalizedTelEmp = Tel_Emp || '';
     const normalizedCorEmp = Cor_Emp || '';
@@ -211,7 +201,7 @@ app.put('/api/empleados/:codEmp', async (req, res) => {
         Nom_Emp, Ape_Emp, normalizedFchNacim, normalizedSexEmp, normalizedTelEmp,
         normalizedFecIniEmp, normalizedCorEmp, normalizedDirEmp, normalizedCodCargo, normalizedSueldoEmp,
         normalizedSeguro, normalizedHabDesEmp,
-        codEmp // WHERE condition
+        codEmp 
     ];
 
     try {
@@ -224,10 +214,9 @@ app.put('/api/empleados/:codEmp', async (req, res) => {
         res.json({ success: true, message: 'Empleado actualizado con éxito' });
 
     } catch (error) {
-        // Log del error para debugging
+    
         console.error('Error al actualizar empleado en la base de datos:', error);
         
-        // Manejo específico si es un error de dato NOT NULL
         if (error.code === 'ER_BAD_NULL_ERROR' || error.code === 'ER_WARN_DATA_OUT_OF_RANGE') {
              return res.status(400).json({
                  success: false,
@@ -245,9 +234,7 @@ app.put('/api/empleados/:codEmp', async (req, res) => {
 });
 
 
-/**
- * Endpoint: Eliminar Empleado (DELETE) 
- */
+/*Endpoint: Eliminar Empleado */
 app.delete('/api/empleados/:codEmp', async (req, res) => {
     const { codEmp } = req.params;
 
@@ -279,9 +266,7 @@ app.delete('/api/empleados/:codEmp', async (req, res) => {
     }
 });
 
-/**
- * NUEVO ENDPOINT: Obtener la lista básica de Empleados (Cod_Emp y Nom_Emp)
- */
+/* NUEVO ENDPOINT: Obtener la lista básica de Empleados*/
 app.get('/api/empleados/lista-basica', async (req, res) => {
     try {
         const sql = `SELECT Cod_Emp, Nom_Emp, Ape_Emp FROM empleados ORDER BY Nom_Emp ASC`;
@@ -302,16 +287,12 @@ app.get('/api/empleados/lista-basica', async (req, res) => {
 });
 
 
-// ------------------------------------------------------------------
-// 7. ENDPOINTS DE USUARIOS
-// ------------------------------------------------------------------
+// ENDPOINTS DE USUARIOS
 
-/**
- * Endpoint para obtener el Historial Completo de Usuarios (GET /api/usuarios)
- */
+/*Endpoint para obtener el Historial Completo de Usuarios*/
 app.get('/api/usuarios', async (req, res) => {
     try {
-        // CORRECCIÓN: Eliminada la sangría excesiva
+    
         const sql = `
 SELECT 
 u.Cod_Usu, 
@@ -343,9 +324,7 @@ ORDER BY u.Cod_Usu DESC
     }
 });
 
-/**
- * Endpoint para Registrar Usuarios (POST /api/usuarios)
- */
+/* Endpoint para Registrar Usuarios */
 app.post('/api/usuarios', async (req, res) => {
     const { Cod_Emp, Nom_Usu, Id_Usu, Contra_Usu, Tipo_Usu, HabDes_Usu } = req.body;
 
@@ -412,19 +391,15 @@ app.post('/api/usuarios', async (req, res) => {
 });
 
 
-/**
- * Endpoint: Actualizar Usuario (PUT /api/usuarios/:codUsu)
- */
+/* Endpoint: Actualizar Usuario */
 app.put('/api/usuarios/:codUsu', async (req, res) => {
     const { codUsu } = req.params;
     const { Cod_Emp, Nom_Usu, Id_Usu, Contra_Usu, Tipo_Usu, HabDes_Usu } = req.body;
 
-    // 1. VALIDACIÓN AJUSTADA: Contra_Usu ahora es opcional. Solo validamos los campos que NUNCA deben faltar.
     if (!Cod_Emp || !Id_Usu || Tipo_Usu === undefined || HabDes_Usu === undefined || Nom_Usu === undefined) {
          return res.status(400).json({ success: false, message: 'Faltan campos requeridos: Empleado, ID de Usuario, Rol o Estado.' });
     }
     
-    // La contraseña solo se actualiza si se envía una nueva (no vacía)
     let sqlUpdatePassword = '';
     let valuesPassword = [];
     if (Contra_Usu && Contra_Usu.length > 0) { 
@@ -471,9 +446,7 @@ app.put('/api/usuarios/:codUsu', async (req, res) => {
 });
 
 
-/**
- * Endpoint: Eliminar Usuario (DELETE /api/usuarios/:codUsu)
- */
+/*Endpoint: Eliminar Usuario */
 app.delete('/api/usuarios/:codUsu', async (req, res) => {
     const { codUsu } = req.params;
 
@@ -506,13 +479,9 @@ app.delete('/api/usuarios/:codUsu', async (req, res) => {
 });
 
 
-// ------------------------------------------------------------------
-// 8. ENDPOINTS DE EMPRESAS
-// ------------------------------------------------------------------
+// ENDPOINTS DE EMPRESAS
 
-/**
- * Endpoint: Obtiene la lista de Códigos y Nombres de Empresas (usado para Historial y Selectores).
- */
+/* Endpoint: Obtiene la lista de Códigos y Nombres de Empresas*/
 app.get('/api/empresas-lista', async (req, res) => {
     try {
         const sql = `SELECT Cod_Emp, Nom_Emp FROM Empresa ORDER BY Nom_Emp ASC`;
@@ -586,19 +555,15 @@ VALUES (?, ?)
 });
 
 
-/**
- * Endpoint: Actualizar Empresa (PUT)
- */
+/*Endpoint: Actualizar Empresa */
 app.put('/api/empresa/:codEmp', async (req, res) => {
     const { codEmp } = req.params;
-    const { Cod_Emp, Nom_Emp } = req.body; // Se reciben ambos por si se editó el Cod_Emp
+    const { Cod_Emp, Nom_Emp } = req.body; 
 
     if (!Nom_Emp || !Cod_Emp) {
         return res.status(400).json({ success: false, message: 'El RTN y Nombre de la Empresa son requeridos para actualizar.' });
     }
     
-    // Si el Cod_Emp en el body es diferente al Cod_Emp en la URL, se asume que se está cambiando el RTN.
-    // La consulta debe usar el Cod_Emp de la URL para el WHERE (el valor original) y el Cod_Emp del body para el SET (el nuevo valor).
 
     const sql = `
         UPDATE Empresa SET
@@ -607,7 +572,7 @@ app.put('/api/empresa/:codEmp', async (req, res) => {
     `;
 
     try {
-        // Se usan los valores: [Nuevo Cod_Emp, Nuevo Nom_Emp, Cod_Emp Original (de la URL)]
+
         const [result] = await pool.query(sql, [Cod_Emp, Nom_Emp, codEmp]);
 
         if (result.affectedRows === 0) {
@@ -626,9 +591,7 @@ app.put('/api/empresa/:codEmp', async (req, res) => {
     }
 });
 
-/**
- * Endpoint: Eliminar Empresa (DELETE)
- */
+/* Endpoint: Eliminar Empresa*/
 app.delete('/api/empresa/:codEmp', async (req, res) => {
     const { codEmp } = req.params;
 
@@ -661,9 +624,7 @@ app.delete('/api/empresa/:codEmp', async (req, res) => {
 });
 
 
-/**
- * Endpoint: Obtener la lista de Clientes por Cod_Emp
- */
+/*Endpoint: Obtener la lista de Clientes*/
 app.get('/api/empresa/clientes/:codEmp', async (req, res) => {
     const { codEmp } = req.params;
 
@@ -698,13 +659,9 @@ app.get('/api/empresa/clientes/:codEmp', async (req, res) => {
 });
 
 
-// ------------------------------------------------------------------
-// 9. ENDPOINTS DE CLIENTES / HUÉSPEDES
-// ------------------------------------------------------------------
+//ENDPOINTS DE HUÉSPEDES
 
-/**
- * Endpoint: Obtener TODOS los Huéspedes (Historial)
- */
+/*Endpoint: Obtener TODOS los Huéspedes*/
 app.get('/api/huespedes-historial', async (req, res) => {
     try {
         const sql = `SELECT * FROM clientes ORDER BY Cod_Cli DESC`;
@@ -724,9 +681,7 @@ app.get('/api/huespedes-historial', async (req, res) => {
 });
 
 
-/**
- * Endpoint para obtener la lista básica de Clientes (para Select)
- */
+/*Endpoint para obtener la lista básica de Clientes*/
 app.get('/api/clientes-lista', async (req, res) => {
     try {
         const sql = `SELECT Cod_Cli, Nom_Cli FROM clientes ORDER BY Nom_Cli ASC`;
@@ -742,9 +697,7 @@ app.get('/api/clientes-lista', async (req, res) => {
 });
 
 
-/**
- * Endpoint para obtener DETALLES de un Cliente por Cod_Cli
- */
+/*Endpoint para obtener DETALLES de un Cliente*/
 app.get('/api/cliente/:codCli', async (req, res) => {
     const { codCli } = req.params;
 
@@ -765,9 +718,7 @@ app.get('/api/cliente/:codCli', async (req, res) => {
     }
 });
 
-/**
- * Endpoint para Registrar HUÉSPEDES
- */
+/*Endpoint para Registrar HUÉSPEDES*/
 app.post('/api/huespedes', async (req, res) => {
     const {
         Cod_Cli, Tipo_Cli, Nom_Cli, Tel1_Huesped, Tel2_Huesped,
@@ -818,9 +769,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     }
 });
 
-/**
- * Endpoint: Actualizar Huésped (PUT)
- */
+/*Endpoint: Actualizar Huésped */
 app.put('/api/huespedes/:codCli', async (req, res) => {
     const { codCli } = req.params;
     const {
@@ -868,9 +817,7 @@ app.put('/api/huespedes/:codCli', async (req, res) => {
 });
 
 
-/**
- * Endpoint: Eliminar Huésped
- */
+/*Endpoint: Eliminar Huésped*/
 app.delete('/api/huespedes/:codCli', async (req, res) => {
     const { codCli } = req.params;
 
@@ -903,14 +850,12 @@ app.delete('/api/huespedes/:codCli', async (req, res) => {
 });
 
 
-// ==================================================================
-// MÓDULO DE GESTIÓN HOTELERA (Habitaciones, Reservas, Caja)
-// ==================================================================
+// MÓDULO DE GESTIÓN HOTELERA (Habitaciones, Reservas, Facturación)
 
-// 1. ENDPOINT MAESTRO: Obtener Tablero de Habitaciones (CORREGIDO)
+// ENDPOINT MAESTRO: Obtener Tablero de Habitaciones
 app.get('/api/habitaciones', async (req, res) => {
     try {
-        // CORRECCIÓN: Eliminada la sangría excesiva
+    
         const finalSql = `
 SELECT 
 h.Cod_Hab, 
@@ -946,24 +891,21 @@ ORDER BY h.Cod_Hab ASC
     }
 });
 
-// 2. ENDPOINT: NUEVA RESERVA (Check-In)
+// ENDPOINT: NUEVA RESERVA
 app.post('/api/reservar', async (req, res) => {
     const { Cod_Hab, Cod_Cli, Fec_Ini, Fec_Fin, Cod_Usu } = req.body;
 
-    // A. Generar ID único para la reserva
     const Cod_Res = Math.floor(Date.now() / 1000);
 
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
 
-        // 1. Validar que la habitación siga libre (Evitar doble venta)
         const [check] = await connection.query('SELECT Est_Hab FROM Habitaciones WHERE Cod_Hab = ?', [Cod_Hab]);
         if (check.length === 0 || check[0].Est_Hab !== 1) {
             throw new Error("La habitación no existe o ya no está disponible.");
         }
 
-        // 2. Obtener el precio actual de la habitación
         const [tipo] = await connection.query(
             'SELECT t.Precio_Hab FROM Habitaciones h JOIN Habitaciones_Tipo t ON h.Cod_Tipo_Hab = t.Cod_Tipo_Hab WHERE h.Cod_Hab = ?',
             [Cod_Hab]
@@ -973,7 +915,6 @@ app.post('/api/reservar', async (req, res) => {
         }
         const Precio_Pactado = tipo[0].Precio_Hab;
 
-        // 3. Insertar la Reserva
         const sqlInsert = `
 INSERT INTO Reserva (
     Cod_Res, Fec_Ini_Res, Fec_Fin_Res, Cod_Hab, Cod_Cli,
@@ -987,13 +928,13 @@ VALUES (
 )
 `;
 
-        // Parámetros: ID, Fecha Inicio, Fecha Fin, Habitación, Cliente, Usuario, Precio
+    
         await connection.query(sqlInsert, [
             Cod_Res, Fec_Ini, Fec_Fin, Cod_Hab, Cod_Cli,
             Cod_Usu || 'Admin', Precio_Pactado
         ]);
 
-        // 4. Cambiar Semáforo a ROJO (Ocupado = 2) en tabla Habitaciones
+        
         await connection.query('UPDATE Habitaciones SET Est_Hab = 2 WHERE Cod_Hab = ?', [Cod_Hab]);
 
         await connection.commit();
@@ -1008,9 +949,7 @@ VALUES (
     }
 });
 
-/**
- * Endpoint: Eliminar o Cancelar Reserva (DELETE /api/reservas/:codRes) (AGREGADO)
- */
+/*Endpoint: Eliminar o Cancelar Reserva*/
 app.delete('/api/reservas/:codRes', async (req, res) => {
     const { codRes } = req.params;
 
@@ -1018,7 +957,6 @@ app.delete('/api/reservas/:codRes', async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        // 1. Obtener el Cod_Hab asociado a la reserva antes de eliminarla
         const [reservaRows] = await connection.query('SELECT Cod_Hab FROM Reserva WHERE Cod_Res = ?', [codRes]);
 
         if (reservaRows.length === 0) {
@@ -1028,10 +966,8 @@ app.delete('/api/reservas/:codRes', async (req, res) => {
 
         const codHab = reservaRows[0].Cod_Hab;
 
-        // 2. Eliminar la reserva de la tabla Reserva
         const [result] = await connection.query('DELETE FROM Reserva WHERE Cod_Res = ?', [codRes]);
 
-        // 3. Cambiar el estado de la habitación a 1 (Disponible/Limpieza)
         await connection.query('UPDATE Habitaciones SET Est_Hab = 1 WHERE Cod_Hab = ?', [codHab]);
 
         await connection.commit(); 
@@ -1055,7 +991,7 @@ app.delete('/api/reservas/:codRes', async (req, res) => {
     }
 });
 
-// 3. ENDPOINT: FACTURAR Y SALIDA (Check-Out)
+// ENDPOINT: FACTURAR Y SALIDA 
 app.post('/api/facturar', async (req, res) => {
     const { Cod_Res, Cod_Hab, Total_Pagar, Cod_Cli, TipoPago, EstadiaDias, Cod_Usu, Fecha_Salida_Real, Extras } = req.body;
 
@@ -1069,19 +1005,17 @@ app.post('/api/facturar', async (req, res) => {
             throw new Error("El Código de Usuario que realiza la facturación es requerido.");
         }
         
-        // 1. Guardar Encabezado de Factura (Tabla: Factura)
         await connection.query(`
 INSERT INTO Factura (Cod_Fact, Fch_Fact, Cod_Cli, Cod_Usu)
 VALUES (?, DATE_FORMAT(NOW(), '%Y-%m-%d'), ?, ?)
 `, [Cod_Fact, Cod_Cli, Cod_Usu]);
 
-        // 2. Guardar el Detalle (Tabla: Factura_Detalle)
         await connection.query(`
 INSERT INTO Factura_Detalle (Cod_Fact, Cod_Hab, EstadiaHot, Recargo_Fact, Total_Unit)
 VALUES (?, ?, ?, 0, ?)
 `, [Cod_Fact, Cod_Hab, EstadiaDias || 1, Total_Pagar]);
 
-        // 3. Cerrar la Reserva (Tabla: Reserva)
+
         await connection.query(`
 UPDATE Reserva
 SET Cod_Est = 1,
@@ -1091,7 +1025,7 @@ SET Cod_Est = 1,
 WHERE Cod_Res = ?
 `, [TipoPago, Fecha_Salida_Real, Cod_Res]);
 
-        // 4. GUARDAR CARGOS EXTRA (TABLA recargos)
+
         if (Extras && Extras.length > 0) {
             const [maxRow] = await connection.query('SELECT MAX(Cod_Cargo) as maxId FROM recargos');
             let nextId = (maxRow[0].maxId || 0) + 1;
@@ -1127,11 +1061,11 @@ WHERE Cod_Res = ?
     }
 });
 
-// 4. ENDPOINT: CONFIRMAR LIMPIEZA
+// ENDPOINT: CONFIRMAR LIMPIEZA
 app.post('/api/habitacion/liberar', async (req, res) => {
     const { Cod_Hab } = req.body;
     try {
-        // Cambiar Semáforo a VERDE (Disponible = 1)
+        
         await pool.query('UPDATE Habitaciones SET Est_Hab = 1 WHERE Cod_Hab = ?', [Cod_Hab]);
         res.json({ success: true });
     } catch (error) {
@@ -1139,7 +1073,7 @@ app.post('/api/habitacion/liberar', async (req, res) => {
     }
 });
 
-// 5. NUEVO ENDPOINT: CAMBIAR ESTADO MANUAL DE HABITACIÓN
+// NUEVO ENDPOINT: CAMBIAR ESTADO MANUAL DE HABITACIÓN
 app.put('/api/habitaciones/cambiar-estado/:codHab', async (req, res) => {
     const { codHab } = req.params;
     const { nuevoEstado } = req.body;
@@ -1165,7 +1099,7 @@ app.put('/api/habitaciones/cambiar-estado/:codHab', async (req, res) => {
     }
 });
 
-// 9. Iniciar el servidor
+// Iniciar el servidor
 app.listen(port, () => {
-    console.log(`🚀 Servidor backend corriendo en http://localhost:${port}`);
+    console.log(`Servidor backend corriendo en http://localhost:${port}`);
 });

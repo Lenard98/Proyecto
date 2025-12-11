@@ -1,12 +1,9 @@
-/* components/MenuPage.css */
+/*MenuPage.css */
 
-/* =========================================
-   0. RESET UNIVERSAL (ESTO ELIMINA LOS BORDES BLANCOS)
-   ========================================= */
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box; /* Evita que los bordes rompan el diseño */
+  box-sizing: border-box;
 }
 
 html, body, #root {
@@ -14,21 +11,10 @@ html, body, #root {
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* Evita scroll horizontal indeseado */
+  overflow-x: hidden;
 }
 
-/* =========================================
-   PALETA DE COLORES
-   Fondo Principal: #F4F4F4 (Gris muy claro)
-   Sidebar/Header:  #111111 (Negro Mate)
-   Acento/Detalles: #D4AF37 (Dorado Metálico)
-   Texto Claro:     #FFFFFF (Blanco)
-   Texto Oscuro:    #333333 (Gris Oscuro)
-   ========================================= */
-
-/* =========================================
-   1. LAYOUT GENERAL
-   ========================================= */
+/* LAYOUT GENERAL*/
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
@@ -47,13 +33,13 @@ html, body, #root {
 
 /* Encabezado Superior */
 .main-header {
-  background-color: #111111; /* NEGRO */
+  background-color: #111111;
   padding: 0 30px;
   height: 70px;
   display: flex;
-  justify-content: flex-end; /* A la derecha en PC */
+  justify-content: flex-end;
   align-items: center;
-  border-bottom: 2px solid #D4AF37; /* Línea Dorada */
+  border-bottom: 2px solid #D4AF37;
   box-shadow: 0 2px 10px rgba(0,0,0,0.3);
   z-index: 500;
 }
@@ -78,12 +64,10 @@ html, body, #root {
   color: #333;
 }
 
-/* =========================================
-   2. SIDEBAR (Barra Lateral)
-   ========================================= */
+/* SIDEBAR*/
 .sidebar {
   width: 260px;
-  background-color: #111111; /* NEGRO */
+  background-color: #111111;
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -91,23 +75,35 @@ html, body, #root {
   flex-shrink: 0;
   z-index: 1000;
   transition: left 0.3s ease-in-out;
-  /* border-right eliminada para que no se vea una línea fea en medio */
   border-right: none; 
 }
 
 .sidebar-header {
   padding: 20px;
   text-align: center;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.3); /* Dorado tenue */
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
 }
 
+/*LOGO INTERACTIVO*/
 .sidebar-logo {
   width: 80px;
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 10px;
-  border: 3px solid #D4AF37; /* Borde Dorado */
+  border: 3px solid #D4AF37;
+  
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sidebar-logo:hover {
+  transform: scale(1.05); 
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.6); 
+}
+
+.sidebar-logo:active {
+  transform: scale(0.95); 
 }
 
 .sidebar-title {
@@ -118,7 +114,7 @@ html, body, #root {
   letter-spacing: 1px;
 }
 
-/* --- NAVEGACIÓN --- */
+/*NAVEGACIÓN*/
 .sidebar-nav {
   flex-grow: 1;
   display: flex;
@@ -169,7 +165,7 @@ html, body, #root {
   color: #D4AF37;
 }
 
-/* --- BOTÓN DE LOGOUT (Pegado al fondo) --- */
+/*BOTÓN DE LOGOUT*/
 .logout-button {
   margin-top: auto; 
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -181,29 +177,25 @@ html, body, #root {
   color: #fff;
 }
 
-/* =========================================
-   3. ESTILOS DE BIENVENIDA (El mensaje centrado)
-   ========================================= */
+/* 3. ESTILOS DE BIENVENIDA*/
 .welcome-container {
   text-align: center;
-  margin-top: 80px; /* Espacio superior para que no quede pegado */
+  margin-top: 80px;
   animation: fadeIn 0.5s ease-in;
 }
 
 .welcome-container h2 {
   font-size: 2rem;
-  color: #111; /* Texto oscuro fuerte */
+  color: #111;
   margin-bottom: 15px;
 }
 
 .welcome-container p {
   font-size: 1.2rem;
-  color: #666; /* Gris suave */
+  color: #666;
 }
 
-/* =========================================
-   4. ESTILOS MÓVILES
-   ========================================= */
+/* 4. ESTILOS MÓVILES*/
 .mobile-menu-toggle {
   display: none; 
   background: none;
@@ -228,9 +220,7 @@ html, body, #root {
   display: block;
 }
 
-/* =========================================
-   5. ESTILOS DEL MODAL (Confirmación Salida)
-   ========================================= */
+/* 5. ESTILOS DEL MODAL*/
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -307,9 +297,7 @@ html, body, #root {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================
-   6. RESPONSIVE MEDIA QUERIES
-   ========================================= */
+/* 6. RESPONSIVE MEDIA QUERIES*/
 @media (max-width: 992px) {
   
   .dashboard-layout {

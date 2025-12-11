@@ -1,8 +1,6 @@
-/* components/LoginPage.css */
+/*LoginPage.css */
 
-/* =========================================
-   RESET BÁSICO
-   ========================================= */
+/* rESET BÁSICO*/
 * {
   margin: 0;
   padding: 0;
@@ -11,12 +9,10 @@
 
 body {
   font-family: 'Roboto', sans-serif;
-  background-color: #f0f2f5; /* Fondo gris muy suave para la página entera */
+  background-color: #f0f2f5; 
 }
 
-/* =========================================
-   ESTILOS DE LA PÁGINA DE LOGIN
-   ========================================= */
+/*ESTILOS DE LA PÁGINA DE LOGIN*/
 .login-page {
   display: flex;
   justify-content: center;
@@ -25,34 +21,34 @@ body {
   padding: 20px;
 }
 
-/* La tarjeta del formulario (AHORA BLANCA) */
+/* La tarjeta del formulario  */
 .login-container {
-  background-color: #ffffff; /* BLANCO */
+  background-color: #ffffff; 
   padding: 40px;
-  border-radius: 8px; /* Bordes ligeramente redondeados */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Sombra suave y moderna */
+  border-radius: 8px; 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
   width: 100%;
   max-width: 400px;
   text-align: center;
-  border: 1px solid #e0e0e0; /* Borde gris muy sutil */
+  border: 1px solid #e0e0e0; 
   animation: fadeIn 0.5s ease;
 }
 
 /* Logo (Natural, no redondo) */
 .login-logo {
-  width: 120px; /* Un poco más ancho para que se vea bien */
+  width: 120px; 
   height: auto;
-  object-fit: contain; /* Asegura que la imagen no se recorte */
+  object-fit: contain; 
   margin-bottom: 10px;
-  border-radius: 0; /* Cero redondeo */
+  border-radius: 0; 
   border: none;
 }
 
 /* Título (Más pequeño y oscuro) */
 .login-container h2 {
   margin-bottom: 25px;
-  color: #333333; /* Gris oscuro / Negro suave */
-  font-size: 1.5rem; /* Tamaño reducido (antes era 1.8 o 2rem) */
+  color: #333333; 
+  font-size: 1.5rem; 
   font-weight: 600;
 }
 
@@ -60,7 +56,7 @@ body {
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Espacio entre inputs */
+  gap: 15px; 
 }
 
 /* Contenedor relativo para el ojito */
@@ -73,19 +69,19 @@ body {
 .login-input {
   width: 100%;
   padding: 12px 15px;
-  padding-right: 40px; /* Espacio para el icono del ojo */
-  border: 1px solid #ccc; /* Borde gris estándar */
+  padding-right: 40px; 
+  border: 1px solid #ccc; 
   border-radius: 5px;
   font-size: 1rem;
-  background-color: #fff; /* Fondo blanco */
-  color: #333; /* Texto oscuro */
+  background-color: #fff; 
+  color: #333; 
   outline: none;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .login-input:focus {
-  border-color: #000000; /* Borde dorado al hacer clic */
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1); /* Resplandor dorado muy suave */
+  border-color: #000000; 
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1); 
 }
 
 .login-input::placeholder {
@@ -98,21 +94,21 @@ body {
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #888; /* Gris para que no distraiga */
+  color: #888; 
   cursor: pointer;
   font-size: 1.1rem;
   z-index: 10;
 }
 
 .password-toggle-icon:hover {
-  color: #333; /* Se oscurece al pasar el mouse */
+  color: #333; /
 }
 
 /* Botón de Ingresar */
 .login-button {
   padding: 12px;
-  background-color: #D4AF37; /* Mantenemos el DORADO de la marca */
-  color: #ffffff; /* Texto blanco para contraste */
+  background-color: #D4AF37; 
+  color: #ffffff; 
   border: none;
   border-radius: 5px;
   font-size: 1rem;
@@ -123,7 +119,7 @@ body {
 }
 
 .login-button:hover {
-  background-color: #b5952f; /* Dorado un poco más oscuro */
+  background-color: #b5952f; 
 }
 
 .login-button:disabled {

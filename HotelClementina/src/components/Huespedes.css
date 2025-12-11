@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
 
-/* --- Wrapper Principal --- */
+/* Wrapper Principal */
 .huespedes-page-wrapper {
-    background-color: #F4F4F4 !important; /* FORZADO: Gris claro */
+    background-color: #F4F4F4 !important; 
     font-family: 'Segoe UI', sans-serif;
     min-height: 100vh;
     padding: 20px;
@@ -11,10 +11,10 @@
     gap: 30px;
 }
 
-/* --- Contenedores tipo Tarjeta --- */
+/* Contenedores tipo Tarjeta */
 .employee-form-container,
 .guest-history-section {
-    background-color: #FFFFFF !important; /* FORZADO: Blanco puro */
+    background-color: #FFFFFF !important; 
     border-radius: 10px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
     padding: 30px;
@@ -22,24 +22,24 @@
     margin-bottom: 0;
 }
 
-/* --- Encabezados --- */
+/* Encabezados */
 .form-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 15px;
-    border-bottom: 3px solid #D4AF37 !important; /* FORZADO: Línea Dorada */
+    border-bottom: 3px solid #D4AF37 !important; 
 }
 
 .form-header h2 {
     font-size: 1.8rem;
-    color: #111111 !important; /* FORZADO: Negro Mate */
+    color: #111111 !important; 
     margin: 0;
     font-weight: 700;
 }
 
-/* --- Formularios e Inputs --- */
+/* Formularios e Inputs */
 .employee-form {
     display: flex;
     flex-wrap: wrap;
@@ -58,7 +58,7 @@
 legend {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #D4AF37 !important; /* FORZADO: Dorado */
+    color: #D4AF37 !important; 
     padding: 0 10px;
     text-transform: uppercase;
 }
@@ -92,12 +92,12 @@ legend {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: #D4AF37 !important; /* FORZADO: Borde Dorado */
+    border-color: #D4AF37 !important; 
     background-color: #FFFFFF !important;
     box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15) !important;
 }
 
-/* --- Botones (Aquí es donde Bootstrap suele molestar) --- */
+/* Botones*/
 .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -108,9 +108,9 @@ legend {
     gap: 15px;
 }
 
-/* Botón Principal (Registrar/Guardar) */
+/* Botón Principal*/
 .btn-primary, .btn-save {
-    background-color: #D4AF37 !important; /* FORZADO: Dorado */
+    background-color: #D4AF37 !important; 
     color: #FFFFFF !important;
     border: 1px solid #D4AF37 !important;
     padding: 12px 25px;
@@ -121,13 +121,13 @@ legend {
 }
 
 .btn-primary:hover, .btn-save:hover {
-    background-color: #C2A032 !important; /* Dorado Oscuro */
+    background-color: #C2A032 !important; 
     border-color: #C2A032 !important;
 }
 
-/* Botón Secundario (Cancelar) */
+/* Botón Secundario*/
 .btn-secondary, .btn-cancel-edit {
-    background-color: #ed0000 !important; /* FORZADO: Negro */
+    background-color: #ed0000 !important; 
     color: white !important;
     border: 1px solid #ed0000 !important;
     padding: 12px 25px;
@@ -164,7 +164,7 @@ legend {
     color: #ffffff !important;
 }
 
-/* --- Tabla de Historial --- */
+/* Tabla de Historial */
 .history-table-container table {
     width: 100%;
     min-width: 1000px;
@@ -174,8 +174,8 @@ legend {
 }
 
 .history-table-container th {
-    background-color: #111111 !important; /* FORZADO: Negro Mate */
-    color: #D4AF37 !important; /* FORZADO: Texto Dorado */
+    background-color: #111111 !important; 
+    color: #D4AF37 !important;
     font-weight: 600;
     text-transform: uppercase;
     padding: 15px;
@@ -192,7 +192,7 @@ legend {
 
 /* Fila en Edición */
 .editing-row td {
-    background-color: #FFFDF5 !important; /* Fondo crema */
+    background-color: #FFFDF5 !important;
     border-bottom: 1px solid #D4AF37;
 }
 

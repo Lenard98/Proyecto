@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './Employees.css'; 
 
-// URL base de tu API
 const API_BASE_URL = 'http://localhost:3002/api'; 
 
 function EmployeesForm() {
     
-    // ==================== CONFIGURACIÓN INICIAL Y ESTADOS ====================
-
-    // Estado inicial de los campos del formulario principal (para el modo CREAR)
+    // Estado inicial de los campos del formulario 
     const initialFormData = {
-        Cod_Emp: null, // Clave Primaria (PK)
+        Cod_Emp: null,
         Nom_Emp: '',
         Ape_Emp: '',
         Fch_Nacim: '',
@@ -22,7 +19,7 @@ function EmployeesForm() {
         Cod_Cargo: 1, 
         Sueldo_Emp: '',
         Seguro: '',
-        HabDesEmp: 1, // 1: Activo/Habilitado
+        HabDesEmp: 1,
         Tipo_Documento: 'DNI', 
         Rol_Sistema: 'Administrador',
     };
@@ -35,7 +32,6 @@ function EmployeesForm() {
     const [editingEmployeeId, setEditingEmployeeId] = useState(null);
     const [editingFormData, setEditingFormData] = useState({});
 
-    // Mapeo de Cargos (Sincronizado con IDs 1, 2, 3, 4 de tu DB)
     const cargos = [
         { id: 1, nombre: 'Administrador' },   
         { id: 2, nombre: 'Recepcionista' },   
@@ -44,10 +40,7 @@ function EmployeesForm() {
     ];
     const tiposDocumento = ['DNI', 'Pasaporte', 'Carnet de Residencia'];
     const roles = ['Administrador', 'Gerente', 'Recepcionista', 'Limpieza'];
-    
-    // ==================== FUNCIONES DE UTILIDAD ====================
 
-    // Función auxiliar para formatear fechas (YYYY-MM-DD) para el input HTML
     const formatDateForInput = (dateString) => {
         if (!dateString) return '';
         try {
@@ -58,14 +51,12 @@ function EmployeesForm() {
         }
     };
     
-    // Función para restablecer el formulario principal y el modo edición
     const handleCancelOrNew = () => {
         setEditingEmployeeId(null);
         setEditingFormData({});
         setFormData(initialFormData);
     };
 
-    // Manejador genérico de cambios en los inputs del formulario principal (CREAR)
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({
@@ -74,7 +65,6 @@ function EmployeesForm() {
         });
     };
     
-    // Manejador para los inputs dentro de la fila de edición (ACTUALIZAR)
     const handleInlineChange = (e) => {
         const { name, value, type, checked } = e.target;
         setEditingFormData(prev => ({
@@ -83,16 +73,15 @@ function EmployeesForm() {
         }));
     };
     
-    // Función auxiliar para obtener el nombre del cargo
     const getCargoNombre = (codCargo) => {
         const cargo = cargos.find(c => c.id === codCargo);
         return cargo ? cargo.nombre : 'N/A';
     };
 
 
-    // ==================== LÓGICA DE BACKEND/API ====================
+    // LÓGICA DE BACKEND
     
-    // Función para OBTENER TODOS los empleados (Historial)
+    // Función para obtener todos los empleados
     const fetchEmployees = async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/empleados`); 
@@ -118,16 +107,11 @@ function EmployeesForm() {
     }, []); 
 
     
-    /**
-     * Inicia la edición en línea, cargando el empleado en el estado temporal.
-     */
+    /*Inicia la edición en línea, cargando el empleado en el estado temporal*/
     const handleEdit = (employee) => {
         
-        // 1. Activa la fila de edición
         setEditingEmployeeId(employee.Cod_Emp); 
-        // ❌ ELIMINADA: window.scrollTo({ top: 0, behavior: 'smooth' }); 
 
-        // 2. Carga TODOS los campos de la DB en el estado de edición (CRÍTICO)
         setEditingFormData({
             Cod_Emp: employee.Cod_Emp, 
             Nom_Emp: employee.Nom_Emp,
@@ -137,7 +121,6 @@ function EmployeesForm() {
             Cod_Cargo: parseInt(employee.Cod_Cargo), 
             HabDesEmp: employee.HabDesEmp,
             
-            // Campos no visibles pero necesarios para el PUT del backend:
             Sueldo_Emp: employee.Sueldo_Emp || 0,
             Seguro: employee.Seguro || 0,
             Dir_Emp: employee.Dir_Emp || '',
@@ -147,13 +130,10 @@ function EmployeesForm() {
         });
     };
 
-    /**
-     * Envía los datos del formulario de CREACIÓN (POST)
-     */
+    /*Envía los datos del formulario de creacion*/
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Verifica si se está intentando crear mientras se edita una fila, y lo previene
         if (editingEmployeeId) {
             alert('Por favor, termine o cancele la edición en curso antes de crear un nuevo empleado.');
             return;
@@ -188,13 +168,10 @@ function EmployeesForm() {
         }
     };
 
-    /**
-     * Envía los cambios de la edición en línea al backend (PUT).
-     */
+    /*Envía los cambios de la edición en línea al backend */
     const handleUpdateInline = async (e) => {
         e.preventDefault();
         
-        // Aseguramos que los campos enviados coincidan con lo que el backend espera para el UPDATE (12 campos)
         const dataToSend = {
             Nom_Emp: editingFormData.Nom_Emp, Ape_Emp: editingFormData.Ape_Emp, 
             Fch_Nacim: editingFormData.Fch_Nacim, Sex_Emp: parseInt(editingFormData.Sex_Emp), 
@@ -217,8 +194,8 @@ function EmployeesForm() {
 
             if (response.ok && responseData.success) {
                 alert('✅ Empleado actualizado exitosamente.');
-                setEditingEmployeeId(null); // Sale del modo edición en línea
-                fetchEmployees(); // Recarga la lista
+                setEditingEmployeeId(null); 
+                fetchEmployees(); 
             } else {
                 alert(`❌ Error al actualizar empleado: ${responseData.message || response.statusText}`);
             }
@@ -229,9 +206,7 @@ function EmployeesForm() {
         }
     };
 
-    /**
-     * Cancela la edición en línea.
-     */
+    /*Cancela la edición en línea.*/
     const handleCancelInline = () => {
         setEditingEmployeeId(null);
         setEditingFormData({});
@@ -261,7 +236,7 @@ function EmployeesForm() {
         }
     };
     
-    // ==================== RENDERIZADO DEL COMPONENTE ====================
+    // RENDERIZADO DEL COMPONENTE
 
     return (
         <div className="employee-form-container">
@@ -377,7 +352,7 @@ function EmployeesForm() {
                 </div>
             </form>
 
-            {/* ==================== Historial de Empleados (Con Edición en Línea) ==================== */}
+            {/* Historial de Empleados*/}
             <div className="employee-history-container">
                 <h3>Historial de Empleados Registrados ({employees.length})</h3>
                 {editingEmployeeId && (
@@ -406,7 +381,6 @@ function EmployeesForm() {
                                     {/* Verifica si esta fila está en modo edición */}
                                     {editingEmployeeId === emp.Cod_Emp ? (
                                         <>
-                                            {/* FILA DE EDICIÓN EN LÍNEA */}
                                             <td>{emp.Cod_Emp}</td>
                                             <td>
                                                 {/* Nombre */}
@@ -491,7 +465,6 @@ function EmployeesForm() {
                                                 <button 
                                                     className="btn-edit" 
                                                     onClick={() => handleEdit(emp)}
-                                                    // Deshabilita Editar si ya hay otra fila en edición
                                                     disabled={editingEmployeeId !== null} 
                                                 >
                                                     Editar

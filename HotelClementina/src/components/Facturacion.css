@@ -1,11 +1,4 @@
-/* =========================================
-   PALETA DE COLORES APLICADA
-   Fondo: #F4F4F4
-   Negro: #111111
-   Dorado: #D4AF37
-   Texto: #333333
-   Alerta/Total: #c0392b (Rojo Original)
-   ========================================= */
+/* Facturacion.css */
 
 .pms-billing-container {
     display: grid; 
@@ -54,7 +47,7 @@
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
 }
 
-/* --- AGREGAR CARGOS MANUALES --- */
+/*AGREGAR CARGOS MANUALES*/
 .add-cargo-form {
     display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;
 }
@@ -179,12 +172,11 @@
     min-height: 600px;
 }
 
-/* --- ESTILOS DEL LOGO --- */
+/*ESTILOS DEL LOGO*/
 .inv-logo-box {
-    width: 80px; /* Ajusta el tamaño deseado del contenedor del logo */
+    width: 80px; 
     height: 80px;
     margin-right: 20px;
-    /* Opcional: un borde dorado fino alrededor del logo */
     border: 2px solid #D4AF37;
     padding: 4px;
     display: flex;
@@ -195,9 +187,9 @@
 .inv-logo-img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Asegura que el logo se vea completo sin deformarse */
+    object-fit: contain;
 }
-/* ------------------------ */
+
 
 .inv-header { 
     display: flex; 
@@ -249,7 +241,7 @@
     font-weight: 600; 
 }
 
-/* === CORRECCIÓN DEFINITIVA DE TOTALES === */
+/* TOTALES */
 .inv-footer { 
     display: flex; 
     justify-content: flex-end; 
@@ -257,7 +249,6 @@
 }
 
 .inv-totals { 
-    /* AUMENTADO A 400px: Esto da espacio para que el total no se corte */
     width: 400px; 
     text-align: right;
 }
@@ -275,15 +266,13 @@
     margin-top: 10px;
     font-weight: bold; 
     font-size: 1.3rem; 
-    color: #c0392b; /* ROJO ORIGINAL */
-    
-    /* IMPORTANTE: Forza a que todo se mantenga en una sola línea */
+    color: #c0392b; 
     white-space: nowrap; 
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-/* ======================================== */
+
 
 /* BOTÓN IMPRIMIR / FACTURAR */
 .print-btn { 

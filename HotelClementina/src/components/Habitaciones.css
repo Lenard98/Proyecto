@@ -1,6 +1,5 @@
-/* ======================================= */
-/* ESTILOS GENERALES Y GRID DE HABITACIONES */
-/* ======================================= */
+/* Habitaciones.css */
+
 .tablero-container {
     padding: 20px;
     background-color: #f0f2f5;
@@ -14,11 +13,11 @@
     margin-top: 20px;
 }
 
-/* --- Tarjeta Base de Habitación --- */
+/* Tarjeta Base de Habitación */
 .hab-card {
     border-radius: 10px;
     padding: 15px;
-    color: white; /* Color de texto base para toda la tarjeta (íconos, letras) */
+    color: white; 
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -53,7 +52,7 @@
     font-size: 0.9rem;
 }
 
-/* --- Contenido de Tarjeta LISA --- */
+/* Contenido de Tarjeta LISA */
 .hab-centro-libre {
     display: flex;
     flex-direction: column;
@@ -76,7 +75,7 @@
     margin-top: 5px;
 }
 
-/* --- Contenido de Tarjeta OCUPADA --- */
+/* Contenido de Tarjeta OCUPADA */
 .hab-detalle-ocupada {
     font-size: 0.8rem;
     background: rgba(0, 0, 0, 0.25); 
@@ -101,9 +100,8 @@
     margin-top: 5px;
 }
 
-/* ======================================= */
+
 /* ESTILOS DEL MODAL */
-/* ======================================= */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -138,7 +136,7 @@
     color: #555;
 }
 
-/* --- Botones del Modal --- */
+/* Botones del Modal */
 .estado-opciones-grid {
     display: grid;
     grid-template-columns: 1fr 1fr; 

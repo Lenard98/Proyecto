@@ -7,10 +7,8 @@ const API_URL = 'http://localhost:3002/api';
 
 const Reservas = () => {
   const [habitacionesLibres, setHabitacionesLibres] = useState([]);
-  // NUEVO ESTADO: Lista de clientes para el Select
   const [clientesLista, setClientesLista] = useState([]); 
   
-  // Fechas por defecto (Hoy)
   const hoy = new Date().toISOString().split('T')[0];
 
   const [formData, setFormData] = useState({
@@ -26,15 +24,19 @@ const Reservas = () => {
 
   const [diasCalculados, setDiasCalculados] = useState(1);
 
-  // ******************************************************
-  // 1. Efecto Inicial: Cargar Habitaciones y Clientes
-  // ******************************************************
   useEffect(() => {
     fetchHabitacionesLibres();
     fetchClientesLista(); 
   }, []);
 
-  // Función para obtener la lista de códigos y nombres de clientes
+  useEffect(() => {
+    const ini = new Date(formData.Fec_Ini);
+    const fin = new Date(formData.Fec_Fin);
+    const diffTime = Math.abs(fin - ini);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    setDiasCalculados(diffDays || 0);
+  }, [formData.Fec_Ini, formData.Fec_Fin]);
+
   const fetchClientesLista = async () => {
     try {
       const res = await axios.get(`${API_URL}/clientes-lista`);
@@ -46,19 +48,6 @@ const Reservas = () => {
     }
   };
 
-  // ******************************************************
-  // 2. Lógica de Autocompletado y Manejo de Fechas
-  // ******************************************************
-
-  // Calcular días visualmente cuando cambian las fechas
-  useEffect(() => {
-    const ini = new Date(formData.Fec_Ini);
-    const fin = new Date(formData.Fec_Fin);
-    const diffTime = Math.abs(fin - ini);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-    setDiasCalculados(diffDays || 0);
-  }, [formData.Fec_Ini, formData.Fec_Fin]);
-
   const fetchHabitacionesLibres = async () => {
     try {
       const res = await axios.get(`${API_URL}/habitaciones`);
@@ -68,9 +57,7 @@ const Reservas = () => {
     } catch (error) { console.error(error); }
   };
 
-  // Función para obtener detalles del cliente y llenar el formulario
   const fetchDetallesCliente = async (codCli) => {
-    // Si el usuario selecciona la opción vacía
     if (!codCli) {
         setFormData(prev => ({
             ...prev,
@@ -87,7 +74,6 @@ const Reservas = () => {
         
         if (res.data.success && res.data.data) {
             const cliente = res.data.data;
-            
             setFormData(prev => ({
                 ...prev,
                 Nom_Cli: cliente.Nom_Cli || '',
@@ -111,18 +97,11 @@ const Reservas = () => {
     }
   };
 
-
-  // Maneja el cambio en el selector de cliente
   const handleClienteChange = (e) => {
     const codCliSeleccionado = e.target.value;
-    
-    // 1. Guardar el Cod_Cli en el estado
     setFormData(prev => ({ ...prev, Cod_Cli: codCliSeleccionado }));
-
-    // 2. Llamar a la función para cargar el resto de los datos
     fetchDetallesCliente(codCliSeleccionado);
   };
-
 
   const handleHabitacionChange = (e) => {
     setFormData({ ...formData, Cod_Hab: e.target.value });
@@ -134,7 +113,6 @@ const Reservas = () => {
     if (!formData.Cod_Cli) return alert("Debe seleccionar un cliente.");
     if (!formData.Cod_Hab) return alert("Debe asignar una habitación.");
 
-
     try {
         await axios.post(`${API_URL}/reservar`, {
             Cod_Hab: formData.Cod_Hab,
@@ -145,7 +123,6 @@ const Reservas = () => {
         });
         alert('✅ Reserva creada y guardada en BD');
         
-        // Limpiar formulario después de la reserva
         setFormData(prev => ({ 
             ...prev, 
             Cod_Cli: '', 
@@ -172,14 +149,12 @@ const Reservas = () => {
 
       <form onSubmit={handleSubmit} className="pms-grid-layout">
         
-        {/* COLUMNA 1: DATOS DEL HUÉSPED */}
         <section className="pms-card">
           <div className="card-header">
             <h3><FaUser /> Perfil del Huésped</h3>
           </div>
           <div className="card-body">
             
-            {/* CAMPO DE SELECCIÓN DE CLIENTE (DROPDOWN) */}
             <div className="input-wrapper full-width" style={{marginBottom: '15px'}}>
               <label>Nombre del Huesped</label>
               <div className="input-icon">
@@ -200,18 +175,15 @@ const Reservas = () => {
               </div>
             </div>
             
-            {/* CAMPOS DE AUTORRELLENO */}
             <div className="form-group-row">
-              {/* --- AQUÍ ESTÁ EL CAMBIO SOLICITADO --- */}
               <div className="input-wrapper">
                   <label>Nombre Completo</label>
-                  <div className="input-icon"> {/* Agregamos el div contenedor con estilo */}
-                    <FaUser /> {/* Agregamos icono para consistencia visual */}
+                  <div className="input-icon"> 
+                    <FaUser /> 
                     <input type="text" placeholder="Nombre del Huésped" required
                         value={formData.Nom_Cli} onChange={e => setFormData({...formData, Nom_Cli: e.target.value})} />
                   </div>
               </div>
-              {/* -------------------------------------- */}
 
               <div className="input-wrapper">
                   <label>Teléfono</label>
@@ -244,7 +216,6 @@ const Reservas = () => {
           </div>
         </section>
 
-        {/* COLUMNA 2: DATOS DE ALOJAMIENTO */}
         <section className="pms-card">
           <div className="card-header">
             <h3><FaBed /> Detalle de Alojamiento</h3>
@@ -263,7 +234,6 @@ const Reservas = () => {
                 </select>
             </div>
 
-            {/* CAJA DE FECHAS (Adaptada para inputs DATE) */}
             <div className="stay-duration-box" style={{flexDirection:'column', alignItems:'flex-start'}}>
                 <div className="form-group-row full-width">
                     <div className="input-wrapper">

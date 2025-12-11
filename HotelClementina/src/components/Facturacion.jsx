@@ -2,40 +2,25 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Facturacion.css'; 
 import { FaSearch, FaPrint, FaCreditCard, FaMoneyBillAlt, FaConciergeBell, FaTrash, FaPlus, FaUserFriends } from 'react-icons/fa';
-
-// --- IMPORTACIÓN CORRECTA DEL LOGO ---
 import logoHotel from '../assets/LogoHotel.jpg';
 
 const API_URL = 'http://localhost:3002/api';
 
-// ***************************************************************
-// DATOS DEL USUARIO LOGUEADO
-// ***************************************************************
 const CODIGO_USUARIO_ACTIVO = 'U002'; 
 const NOMBRE_USUARIO_ACTIVO = 'Maria Lopez (Recep)'; 
 
 const Facturacion = () => {
   const [habitacionesOcupadas, setHabitacionesOcupadas] = useState([]);
   const [seleccionada, setSeleccionada] = useState(null);
-  
-  // Mantenemos la fecha de salida real (hoy) para el registro en la BD al facturar
   const [fechaSalidaCalculo, setFechaSalidaCalculo] = useState('');
-
-  // Lógica: 1=Efectivo, 0=Tarjeta
   const [metodoPago, setMetodoPago] = useState(1); 
-  
-  // Lista de cargos manuales
   const [cargosExtra, setCargosExtra] = useState([]);
   const [nuevoCargo, setNuevoCargo] = useState({ descripcion: '', precio: '', cantidad: 1 });
-  
-  // --- NUEVO ESTADO: Input para personas extra ---
   const [personasInput, setPersonasInput] = useState('');
-
   const [totales, setTotales] = useState(null);
 
   useEffect(() => { fetchHabitacionesOcupadas(); }, []);
   
-  // Recalcular si cambia la selección, los cargos extra o la fecha
   useEffect(() => { if (seleccionada) calcular(); }, [seleccionada, cargosExtra, fechaSalidaCalculo]);
 
   const fetchHabitacionesOcupadas = async () => {
@@ -47,21 +32,19 @@ const Facturacion = () => {
     } catch (error) { console.error(error); }
   };
 
-  // --- NUEVA FUNCIÓN: AGREGAR PERSONAS EXTRA (PRECIO FIJO 400) ---
   const agregarPersonas = () => {
     const cant = parseInt(personasInput);
     if (!cant || cant < 1) return alert("Ingrese una cantidad válida de personas.");
 
-    // Agregamos a la lista de cargos existente para que se procese igual que los demás
     setCargosExtra([
         ...cargosExtra,
         {
             descripcion: 'Persona Extra',
-            precio: 400.00, // Precio fijo solicitado
+            precio: 400.00, 
             cantidad: cant
         }
     ]);
-    setPersonasInput(''); // Limpiar input
+    setPersonasInput(''); 
   };
 
   const agregarCargo = () => {
@@ -118,8 +101,6 @@ const Facturacion = () => {
     if (dias < 1) dias = 1; 
 
     const subHospedaje = precioBase * dias;
-    
-    // Sumar cargos manuales (Incluye las personas extra)
     const totalExtras = cargosExtra.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
 
     const subtotal = subHospedaje + totalExtras;
@@ -144,7 +125,6 @@ const Facturacion = () => {
         TipoPago: metodoPago, 
         Cod_Usu: CODIGO_USUARIO_ACTIVO,
         Fecha_Salida_Real: fechaSalidaCalculo,
-        // --- AQUÍ ENVIAMOS LOS CARGOS (PERSONAS Y MANUALES) ---
         Extras: cargosExtra 
       });
       alert('✅ Factura Generada y Reserva Cerrada.');
@@ -160,7 +140,6 @@ const Facturacion = () => {
   return (
     <div className="pms-billing-container fade-in">
       
-      {/* SIDEBAR: SELECCIÓN Y EXTRAS */}
       <div className="billing-controls">
         <div className="control-section">
           <h3><FaSearch /> Buscar Reserva Activa</h3>
@@ -191,7 +170,6 @@ const Facturacion = () => {
         {seleccionada && (
           <div className="control-section fade-in">
             
-            {/* --- SECCIÓN NUEVA: PERSONAS EXTRA --- */}
             <h3><FaUserFriends /> Personas Extra (L. 400)</h3>
             <div className="add-cargo-form">
                 <input 
@@ -275,12 +253,10 @@ const Facturacion = () => {
         
       </div>
 
-      {/* VISTA PREVIA DE FACTURA */}
       <div className="invoice-preview">
         {totales ? (
             <div className="paper-invoice">
                 <div className="inv-header">
-                    {/* --- AQUÍ VA LA IMAGEN DEL LOGO --- */}
                     <div className="inv-logo-box">
                         <img src={logoHotel} alt="Logo Hotel Clementina" className="inv-logo-img" />
                     </div> 
@@ -335,13 +311,11 @@ const Facturacion = () => {
                 </table>
 
                 <div className="inv-footer">
-                    {/* --- SECCIÓN DE TOTALES CORREGIDA --- */}
                     <div className="inv-totals">
                         <div className="total-row"><span>Subtotal:</span> <span>L. {totales.subtotal.toFixed(2)}</span></div>
                         <div className="total-row"><span>I.S.V. (15%):</span> <span>L. {totales.isv.toFixed(2)}</span></div>
                         <div className="total-row"><span>Turismo (4%):</span> <span>L. {totales.turismo.toFixed(2)}</span></div>
                         
-                        {/* TOTAL A PAGAR: ESTRUCTURA PARA QUE SE SEPARE CORRECTAMENTE */}
                         <div className="total-row grand-total">
                             <span>TOTAL A PAGAR:</span> 
                             <span>L. {totales.total.toFixed(2)}</span>
