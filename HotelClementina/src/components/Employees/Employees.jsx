@@ -242,9 +242,7 @@ function EmployeesForm() {
         <div className="employee-form-container">
             <header className="form-header">
                 <h2>Gestión de Empleados</h2>
-                <button className="btn-primary" type="button" onClick={handleCancelOrNew}>
-                    Agregar Nuevo Empleado
-                </button>
+                {/* Botón eliminado de aquí */}
             </header>
 
             {/* Formulario de CREACIÓN (Mantener) */}

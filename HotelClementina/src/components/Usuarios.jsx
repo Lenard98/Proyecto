@@ -11,7 +11,8 @@ const ROLES = [
     { id: 4, name: 'Gerente' }  
 ];
 
-const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleDelete, handleSave, handleCancelEdit }) => {
+// 1. Recibimos 'empleados' como prop en el componente de la tabla
+const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleDelete, handleSave, handleCancelEdit, empleados }) => {
     if (history.length === 0) {
         return <p>No hay usuarios registrados en el historial.</p>;
     }
@@ -42,7 +43,7 @@ const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleD
                 );
             }
             
-             if (field === 'HabDes_Usu') {
+            if (field === 'HabDes_Usu') {
                 return (
                     <select
                         name={field}
@@ -56,8 +57,34 @@ const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleD
                 );
             }
              
-             if (field === 'Cod_Emp') {
-                return <span>{usuario.Nom_Empleado}</span>; 
+            // 2. Aquí modificamos la lógica para Cod_Emp para mostrar el select de empleados
+            if (field === 'Cod_Emp') {
+                return (
+                    <select
+                        name="Cod_Emp"
+                        value={editingUsuario.Cod_Emp || ''}
+                        onChange={(e) => {
+                            const newCodEmp = e.target.value;
+                            // Actualizamos el código del empleado
+                            handleEdit(usuario, 'Cod_Emp', newCodEmp);
+                            
+                            // Opcional: Actualizamos también el nombre visualmente para consistencia inmediata
+                            const selectedEmp = empleados.find(emp => emp.Cod_Emp == newCodEmp);
+                            if (selectedEmp) {
+                                handleEdit(usuario, 'Nom_Empleado', selectedEmp.Nom_Completo);
+                            }
+                        }}
+                        className="table-input"
+                        required
+                    >
+                        <option value="">Seleccione Empleado</option>
+                        {empleados.map(emp => (
+                            <option key={emp.Cod_Emp} value={emp.Cod_Emp}>
+                                {emp.Nom_Completo}
+                            </option>
+                        ))}
+                    </select>
+                ); 
              }
         }
         
@@ -82,6 +109,11 @@ const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleD
         }
         if (field === 'Tipo_Usu') {
              return <span>{ROLES.find(r => r.id === value)?.name || 'N/A'}</span>;
+        }
+
+        // Para lectura normal, mostramos el nombre del empleado si es el campo Cod_Emp
+        if (field === 'Cod_Emp') {
+            return <span>{usuario.Nom_Empleado}</span>;
         }
 
         return <span>{value}</span>;
@@ -111,40 +143,40 @@ const UsuarioHistoryTable = memo(({ history, editingUsuario, handleEdit, handleD
                             <td data-label="Acciones" className="action-cell">
                                 {isEditing(usuario.Cod_Usu) ? (
                                     <>
-                                        <button 
-                                            className="btn-save" 
-                                            onClick={() => handleSave(editingUsuario)} 
-                                            disabled={!editingUsuario.Id_Usu || !editingUsuario.Tipo_Usu} 
-                                            title="Guardar cambios"
-                                        >
-                                            Guardar
-                                        </button>
-                                        <button 
-                                            className="btn-cancel-edit" 
-                                            onClick={handleCancelEdit} 
-                                            title="Cancelar edición"
-                                        >
-                                            Cancelar
-                                        </button>
+                                            <button 
+                                                className="btn-save" 
+                                                onClick={() => handleSave(editingUsuario)} 
+                                                disabled={!editingUsuario.Id_Usu || !editingUsuario.Tipo_Usu} 
+                                                title="Guardar cambios"
+                                            >
+                                                Guardar
+                                            </button>
+                                            <button 
+                                                className="btn-cancel-edit" 
+                                                onClick={handleCancelEdit} 
+                                                title="Cancelar edición"
+                                            >
+                                                Cancelar
+                                            </button>
                                     </>
                                 ) : (
                                     <>
-                                        <button 
-                                            className="btn-edit" 
-                                            onClick={() => handleEdit(usuario)} 
-                                            disabled={!!editingUsuario} 
-                                            title="Editar usuario"
-                                        >
-                                            Editar
-                                        </button>
-                                        <button 
-                                            className="btn-delete" 
-                                            onClick={() => handleDelete(usuario.Cod_Usu)} 
-                                            disabled={!!editingUsuario} 
-                                            title="Eliminar usuario"
-                                        >
-                                            Borrar
-                                        </button>
+                                            <button 
+                                                className="btn-edit" 
+                                                onClick={() => handleEdit(usuario)} 
+                                                disabled={!!editingUsuario} 
+                                                title="Editar usuario"
+                                            >
+                                                Editar
+                                            </button>
+                                            <button 
+                                                className="btn-delete" 
+                                                onClick={() => handleDelete(usuario.Cod_Usu)} 
+                                                disabled={!!editingUsuario} 
+                                                title="Eliminar usuario"
+                                            >
+                                                Borrar
+                                            </button>
                                     </>
                                 )}
                             </td>
@@ -276,6 +308,7 @@ function UsuariosForm() {
             const newValue = ['Tipo_Usu', 'HabDes_Usu'].includes(field) ? parseInt(value) : value;
             setEditingUsuario(prev => ({ ...prev, [field]: newValue }));
         } else {
+            // Al iniciar la edición, aseguramos que Nom_Empleado esté listo
             const employeeName = empleados.find(e => e.Cod_Emp === usuario.Cod_Emp)?.Nom_Completo || usuario.Nom_Usu;
             setEditingUsuario({ ...usuario, Nom_Empleado: employeeName, Contra_Usu: '' }); 
             displayMessage('Modo edición activado. Guarde o cancele antes de continuar.');
@@ -353,7 +386,7 @@ function UsuariosForm() {
             <div className="usuarios-form-container">
                 <header className="form-header">
                     <h2>Gestión de Usuarios</h2>
-                    <p className="admin-note">Solo visible para Administradores.</p>
+                    
                 </header>
                 
                 {message && (
@@ -471,6 +504,7 @@ function UsuariosForm() {
                         handleDelete={handleDelete}
                         handleSave={handleSave}
                         handleCancelEdit={handleCancelEdit}
+                        empleados={empleados} /* 3. Aquí pasamos la lista de empleados a la tabla */
                     />
                 )}
             </div>
