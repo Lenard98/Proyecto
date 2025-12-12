@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import './Facturacion.css'; 
 import { FaSearch, FaPrint, FaCreditCard, FaMoneyBillAlt, FaConciergeBell, FaTrash, FaPlus, FaUserFriends } from 'react-icons/fa';
 import logoHotel from '../assets/LogoHotel.jpg';
 
 const API_URL = 'http://localhost:3002/api';
 
-const CODIGO_USUARIO_ACTIVO = 'U002'; 
-const NOMBRE_USUARIO_ACTIVO = 'Maria Lopez (Recep)'; 
-
 const Facturacion = () => {
+  const [usuarioActivo, setUsuarioActivo] = useState({ cod: 'U000', nom: 'Usuario Desconocido' });
   const [habitacionesOcupadas, setHabitacionesOcupadas] = useState([]);
   const [seleccionada, setSeleccionada] = useState(null);
   const [fechaSalidaCalculo, setFechaSalidaCalculo] = useState('');
@@ -19,7 +19,20 @@ const Facturacion = () => {
   const [personasInput, setPersonasInput] = useState('');
   const [totales, setTotales] = useState(null);
 
-  useEffect(() => { fetchHabitacionesOcupadas(); }, []);
+  useEffect(() => {
+    // Cargar habitaciones
+    fetchHabitacionesOcupadas();
+
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        
+        setUsuarioActivo({
+            cod: parsedUser.cod_usu || parsedUser.Cod_Usu || 'U000',
+            nom: parsedUser.nom_usu || parsedUser.Nom_Usu || 'Admin'
+        });
+    }
+  }, []);
   
   useEffect(() => { if (seleccionada) calcular(); }, [seleccionada, cargosExtra, fechaSalidaCalculo]);
 
@@ -116,6 +129,32 @@ const Facturacion = () => {
     if(!window.confirm("¿Confirmar cobro y emisión de factura final?")) return;
 
     try {
+      const input = document.querySelector('.paper-invoice');
+      const printBtn = document.querySelector('.print-btn');
+      
+      if (!input) {
+        alert("Error: No se encontró la vista de la factura.");
+        return;
+      }
+
+      if(printBtn) printBtn.style.display = 'none';
+
+      const canvas = await html2canvas(input, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      
+      if(printBtn) printBtn.style.display = 'flex';
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      const fechaFormateada = new Date().toLocaleDateString('es-HN').replace(/\//g, '-');
+      const nombreClienteSanitizado = (seleccionada.Nom_Cli || 'Cliente').replace(/\s+/g, '_');
+
+      pdf.save(`Factura_${nombreClienteSanitizado}_${fechaFormateada}.pdf`);
+
       await axios.post(`${API_URL}/facturar`, {
         Cod_Res: seleccionada.Cod_Res, 
         Cod_Hab: seleccionada.Cod_Hab,
@@ -123,16 +162,23 @@ const Facturacion = () => {
         Total_Pagar: totales.total.toFixed(2),
         EstadiaDias: totales.dias, 
         TipoPago: metodoPago, 
-        Cod_Usu: CODIGO_USUARIO_ACTIVO,
+        Cod_Usu: usuarioActivo.cod, // 3. AQUÍ USAMOS EL CÓDIGO REAL DEL USUARIO
         Fecha_Salida_Real: fechaSalidaCalculo,
         Extras: cargosExtra 
       });
-      alert('✅ Factura Generada y Reserva Cerrada.');
+
+      alert('✅ Factura Generada, PDF Descargado y Reserva Cerrada.');
+      
       setSeleccionada(null);
       setTotales(null);
       setCargosExtra([]);
       fetchHabitacionesOcupadas(); 
+
     } catch (error) { 
+        const printBtn = document.querySelector('.print-btn');
+        if(printBtn) printBtn.style.display = 'flex';
+        
+        console.error(error);
         alert('Error al facturar: ' + (error.response?.data?.message || error.message)); 
     }
   };
@@ -276,7 +322,8 @@ const Facturacion = () => {
                     <div style={{textAlign:'right'}}>
                         <strong>FACTURA Nº:</strong> {Math.floor(Date.now()/1000)}<br/>
                         <strong>FECHA:</strong> {new Date().toLocaleDateString()}<br/>
-                        <strong>FACTURADO POR:</strong> {NOMBRE_USUARIO_ACTIVO} <br/>
+                        {/* 4. AQUÍ USAMOS EL NOMBRE REAL DEL USUARIO LOGUEADO */}
+                        <strong>FACTURADO POR:</strong> {usuarioActivo.nom} <br/>
                         <strong>HABITACIÓN:</strong> {seleccionada.Cod_Hab}
                     </div>
                 </div>
